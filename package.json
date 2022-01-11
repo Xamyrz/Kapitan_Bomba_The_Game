@@ -1,0 +1,33 @@
+{
+  "name": "YouTube-Sync",
+  "version": "1.0.0",
+  "description": "Youtube-Sync",
+  "main": "app.js",
+  "dependencies": {
+    "ejs": "^2.5.9",
+    "express": "^4.16.3",
+    "npm": "^8.3.0",
+    "request": "^2.85.0",
+    "socket.io": "^2.1.1",
+    "tape": "^4.9.0"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "start": "node app.js",
+    "stop": "killall -SIGINT",
+    "test": "node test.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/jomaoppa/node-js-template.git"
+  },
+  "keywords": [
+    "node"
+  ],
+  "author": "Kamil",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Xamyrz/Xamyrz.github.io/issues"
+  },
+  "homepage": "https://github.com/Xamyrz/Xamyrz.github.io#readme"
+}
