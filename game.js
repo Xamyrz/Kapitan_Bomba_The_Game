@@ -1,6 +1,10 @@
 const { GRID_SIZE } = require('./constants');
 const { GRAVITY } = require('./constants');
+const { PLAYER_SIZE } = require('./constants');
 const { levelOne } = require('./levels');
+const { player } = require('./player');
+
+let fallCounter = 0
 
 module.exports = {
   initGame,
@@ -11,46 +15,12 @@ module.exports = {
 
 function initGame() {
   const state = createGameState()
-  //randomFood(state);
   return state;
 }
 
 function createGameState() {
   return {
-    players: [{
-      jumping: false,
-      falling: true,
-      pos: {
-        x: 3,
-        y: 10,
-      },
-      vel: {
-        x: 0,
-        y: 0,
-      },
-      snake: [
-        {x: 1, y: 10},
-        {x: 2, y: 10},
-        {x: 3, y: 10},
-      ],
-    }, {
-      jumping: false,
-      falling: true,
-      pos: {
-        x: 18,
-        y: 10,
-      },
-      vel: {
-        x: 0,
-        y: 0,
-      },
-      snake: [
-        {x: 20, y: 10},
-        {x: 19, y: 10},
-        {x: 18, y: 10},
-      ],
-    }],
-    food: {},
+    players: [new player(PLAYER_SIZE,PLAYER_SIZE, 390, 10), new player(PLAYER_SIZE,PLAYER_SIZE, 200, 300)],
     platforms: levelOne(),
     gridsize: GRID_SIZE,
   };
@@ -60,67 +30,72 @@ function gameLoop(player, platforms) {
     return;
   }
 
-  playerCollisions(player, platforms);
+  //let prevPlayerState = Object.assign({}, player);
+  playerGravity(player);
 
-  playerGravity(player);
-  playerGravity(player);
+  playerCollisions(player, platforms);
 
   return;
 }
-function playerCollisions(p, s){
+function playerCollisions(player, platforms){
   var onPlatform = []
-    for(i=0; i<s.length; i++){
-      if(s[i].intersects(p)){
-        p.vel.y = 0
-        p.falling = false;
-        p.pos.y = s[i].y-100;
-        onPlatform.push(true);
-      }else{
-        onPlatform.push(false);
+  for(i=0; i<platforms.length; i++){
+    // console.log(player.bottom, prevPlayer.bottom, platforms[i]);
+    // if(pointOnLine(player.bottom, prevPlayer.bottom, platforms[i]).between_y) console.log("test")
+    //console.log(pointOnLine(player.bottom, prevPlayerState.bottom, platforms[i]).between_y);
+    if(platforms[i].intersects(player.right, {w: 10, h: PLAYER_SIZE-10})){
+      player.vel.x = 0;
+      player.updateOnCollideRight(platforms[i]);
+      // console.log("right: "+ player.pos.x, player.pos.y)
+      continue
+    }
+    if(platforms[i].intersects(player.left, {w: 10, h: PLAYER_SIZE-10})){
+      player.vel.x = 0;
+      player.updateOnCollideLeft(platforms[i]);
+      // console.log("left: "+ player.pos.x, player.pos.y)
+      continue
+    }
+    if(platforms[i].intersects(player.bottom, {w: PLAYER_SIZE-10, h: 10})){
+      if(!player.jumping){
+        player.vel.y = 0
       }
+      player.falling = false;
+      player.updateOnCollideGround(platforms[i])
+      onPlatform.push(true);
+      // console.log("bottom: "+ player.pos.x, player.pos.y)
+      continue
+    }else{
+      onPlatform.push(false);
     }
-    
-    if(onPlatform.every(function(bool){return bool === false})){
-      p.falling = true;
+    if(platforms[i].intersects(player.top, {w: PLAYER_SIZE-10, h: 10})){
+      player.vel.y = GRAVITY;
+      player.updateOnCollideCeiling(platforms[i]);
+      player.falling = true;
+      // console.log("top : "+ player.pos.x, player.pos.y)
+      continue
     }
+  }
+  if(onPlatform.every(function(bool){return bool === false})){
+    player.falling = true;
+  }
 }
 
 function playerGravity(player){
-  player.pos.x += player.vel.x;
-  player.pos.y += player.vel.y;
+  //console.log(player.vel.y);
+  player.updatePosition();
 
   if(player.falling){
     player.vel.y += GRAVITY
+    //console.log(player.vel.y);
   }
   if(player.jumping){
-    player.vel.y -= GRAVITY*20
-    if(player.vel.y <= 0){
+    player.vel.y -= GRAVITY*10
+    if(player.vel.y <= -5){ //how high can jump
       player.falling = true;
       player.jumping = false;
     }
   }
 }
-
-// function randomFood(state) {
-//   food = {
-//     x: Math.floor(Math.random() * GRID_SIZE),
-//     y: Math.floor(Math.random() * GRID_SIZE),
-//   }
-
-//   for (let cell of state.players[0].snake) {
-//     if (cell.x === food.x && cell.y === food.y) {
-//       return randomFood(state);
-//     }
-//   }
-
-//   for (let cell of state.players[1].snake) {
-//     if (cell.x === food.x && cell.y === food.y) {
-//       return randomFood(state);
-//     }
-//   }
-
-//   state.food = food;
-// }
 
 function getUpdatedVelocity(keyCode) {
   switch (keyCode) {
@@ -133,20 +108,9 @@ function getUpdatedVelocity(keyCode) {
     case "E": { // right
       return { x: 1, y: 0 };
     }
-    // case "NW": {
-    //   return { x: -1, y: -1}
-    // }
-    // case "NE": {
-    //   return { x: 1, y: -1}
-    // }
-    // case "SW": {
-    //   return { x: -1, y: 1}
-    // }
-    // case "SE": {
-    //   return { x: 1, y: 1}
-    // }
     case "C": {
       return null
+      //return { x: 0, y: 0 };
     }
   }
 }
@@ -166,4 +130,41 @@ function isJumping(keyCode) {
       return { x: 0, y: 0, jumping: false}
     }
   }
+}
+
+function pointOnLine(pt1, pt2, pt3) {
+  const result = {
+      on_projected_line: true,
+      on_line: false,
+      between_both: false,
+      between_x: false,
+      between_y: false,
+  };
+
+  // Determine if on line interior or exterior
+  const x = (pt3.x - pt1.x) / (pt2.x - pt1.x);
+  const y = (pt3.y - pt1.y) / (pt2.y - pt1.y);
+
+  // Check if on line equation
+  result.on_projected_line = x === y;
+
+  // Check within x bounds
+  if (
+      (pt1.x <= pt3.x && pt3.x <= pt2.x) ||
+      (pt2.x <= pt3.x && pt3.x <= pt1.x)
+  ) {
+      result.between_x = true;
+  }
+
+  // Check within y bounds
+  if (
+      (pt1.y <= pt3.y && pt3.y <= pt2.y) ||
+      (pt2.y <= pt3.y && pt3.y <= pt1.y)
+  ) {
+      result.between_y = true;
+  }
+
+  result.between_both = result.between_x && result.between_y;
+  result.on_line = result.on_projected_line && result.between_both;
+  return result;
 }

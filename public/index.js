@@ -1,5 +1,6 @@
 const BG_COLOUR = '#231f20';
 const FOOD_COLOUR = '#e66916';
+const PLAYER_SIZE = 75;
 
 const socket = io();
 
@@ -51,16 +52,16 @@ function init() {
   ctx.fillRect(0, 0, canvas.width, canvas.height);
   gameActive = true;
   joy = new JoyStick('joyDiv');
+
+  let joystick = document.getElementById('joyDiv');
+  joystick.style.display = "block";
+
+
+
+  setInterval(function(){
+      socket.emit('keydown', joy.GetDir());
+  }, 50);
 }
-
-var joystick = document.getElementById('joyDiv');
-joystick.style.display = "block";
-
-
-
-setInterval(function(){
-    socket.emit('keydown', joy.GetDir());
-}, 50);
 
 var bomba = new Image();
 var szeregowyOne = new Image();
@@ -73,7 +74,7 @@ function paintGame(state) {
   ctx.fillStyle = BG_COLOUR;
   ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-  const food = state.food;
+  // const food = state.food;
   const gridsize = state.gridsize;
   const size = gridsize;
   const platforms = state.platforms;
@@ -82,18 +83,15 @@ function paintGame(state) {
     ctx.fillStyle = platforms[i].color;
     ctx.fillRect(platforms[i].x, platforms[i].y, platforms[i].w, platforms[i].h);
   }
-  ctx.fillStyle = FOOD_COLOUR;
-  ctx.fillRect(food.x * size, food.y * size, size, size);
   paintPlayer(state.players[0], size, bomba);
   paintPlayer(state.players[1], size, szeregowyOne)
-  paintPlayer(state.players[2], size, szeregowytwo)
+  //paintPlayer(state.players[2], size, szeregowytwo)
 }
 
 function paintPlayer(playerState, size, p) {
   const playerPos = playerState.pos;
-    ctx.drawImage(p, playerPos.x, playerPos.y, 50, 100);
+    ctx.drawImage(p, playerPos.x, playerPos.y, PLAYER_SIZE, PLAYER_SIZE);
     ctx.fillStyle = "#fc4b04"
-    ctx.fillRect(playerPos.x, playerPos.y, 50, 5) //just to show
   console.log("loaded")
 }
 

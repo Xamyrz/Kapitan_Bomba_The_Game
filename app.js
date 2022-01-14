@@ -81,9 +81,14 @@ io.on('connection', client => {
     const jumping = isJumping(keyCode)
 
     if (vel && state[roomName].players != null) { //to be fixed, allows for slow falling
-      state[roomName].players[client.number - 1].vel = vel;
+      if(state[roomName].players[client.number - 1].falling){
+        state[roomName].players[client.number - 1].vel.x = vel.x;
+      }else{
+        state[roomName].players[client.number - 1].vel = vel;
+      }
     }
     if(jumping && !state[roomName].players[client.number - 1].jumping && !state[roomName].players[client.number - 1].falling){
+      // console.log(jumping.jumping)
       state[roomName].players[client.number - 1].jumping = jumping.jumping;
       state[roomName].players[client.number - 1].vel.x = jumping.x;
       state[roomName].players[client.number - 1].vel.y = jumping.y;
