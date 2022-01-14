@@ -43,18 +43,6 @@ function playerCollisions(player, platforms){
     // console.log(player.bottom, prevPlayer.bottom, platforms[i]);
     // if(pointOnLine(player.bottom, prevPlayer.bottom, platforms[i]).between_y) console.log("test")
     //console.log(pointOnLine(player.bottom, prevPlayerState.bottom, platforms[i]).between_y);
-    if(platforms[i].intersects(player.right, {w: 10, h: PLAYER_SIZE-10})){
-      player.vel.x = 0;
-      player.updateOnCollideRight(platforms[i]);
-      // console.log("right: "+ player.pos.x, player.pos.y)
-      continue
-    }
-    if(platforms[i].intersects(player.left, {w: 10, h: PLAYER_SIZE-10})){
-      player.vel.x = 0;
-      player.updateOnCollideLeft(platforms[i]);
-      // console.log("left: "+ player.pos.x, player.pos.y)
-      continue
-    }
     if(platforms[i].intersects(player.bottom, {w: PLAYER_SIZE-10, h: 10})){
       if(!player.jumping){
         player.vel.y = 0
@@ -62,7 +50,7 @@ function playerCollisions(player, platforms){
       player.falling = false;
       player.updateOnCollideGround(platforms[i])
       onPlatform.push(true);
-      // console.log("bottom: "+ player.pos.x, player.pos.y)
+      console.log("bottom: "+ player.pos.x, player.pos.y)
       continue
     }else{
       onPlatform.push(false);
@@ -71,7 +59,19 @@ function playerCollisions(player, platforms){
       player.vel.y = GRAVITY;
       player.updateOnCollideCeiling(platforms[i]);
       player.falling = true;
-      // console.log("top : "+ player.pos.x, player.pos.y)
+      console.log("top : "+ player.pos.x, player.pos.y)
+      continue
+    }
+    if(platforms[i].intersects(player.right, {w: 10, h: PLAYER_SIZE-10})){
+      player.vel.x = 0;
+      player.updateOnCollideRight(platforms[i]);
+      console.log("right: "+ player.pos.x, player.pos.y, platforms[i])
+      continue
+    }
+    if(platforms[i].intersects(player.left, {w: 10, h: PLAYER_SIZE-10})){
+      player.vel.x = 0;
+      player.updateOnCollideLeft(platforms[i]);
+      console.log("left: "+ player.pos.x, player.pos.y)
       continue
     }
   }
@@ -90,7 +90,7 @@ function playerGravity(player){
   }
   if(player.jumping){
     player.vel.y -= GRAVITY*10
-    if(player.vel.y <= -5){ //how high can jump
+    if(player.vel.y <= -7){ //how high can jump
       player.falling = true;
       player.jumping = false;
     }

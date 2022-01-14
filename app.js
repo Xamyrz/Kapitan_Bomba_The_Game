@@ -110,17 +110,17 @@ function startGameInterval(roomName) {
       clearInterval(intervalIdOne);
     }
   }, 1000 / FRAME_RATE);
-  const intervalIdTwo = setInterval(() => {
-    winnerTwo = gameLoop(state[roomName].players[1], state[roomName].platforms);
+  // const intervalIdTwo = setInterval(() => {
+  //   winnerTwo = gameLoop(state[roomName].players[1], state[roomName].platforms);
     
-    if (!winnerTwo) {
-      emitGameState(roomName, state[roomName])
-    } else {
-      emitGameOver(roomName, winner);
-      state[roomName] = null;
-      clearInterval(intervalIdTwo);
-    }
-  }, 1000 / FRAME_RATE);
+  //   if (!winnerTwo) {
+  //     emitGameState(roomName, state[roomName])
+  //   } else {
+  //     emitGameOver(roomName, winner);
+  //     state[roomName] = null;
+  //     clearInterval(intervalIdTwo);
+  //   }
+  // }, 1000 / FRAME_RATE);
 }
 
 function emitGameState(room, gameState) {
