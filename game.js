@@ -50,7 +50,7 @@ function playerCollisions(player, platforms){
       player.falling = false;
       player.updateOnCollideGround(platforms[i])
       onPlatform.push(true);
-      console.log("bottom: "+ player.pos.x, player.pos.y)
+      //console.log("bottom: "+ player.pos.x, player.pos.y)
       continue
     }else{
       onPlatform.push(false);
@@ -59,19 +59,19 @@ function playerCollisions(player, platforms){
       player.vel.y = GRAVITY;
       player.updateOnCollideCeiling(platforms[i]);
       player.falling = true;
-      console.log("top : "+ player.pos.x, player.pos.y)
+      // console.log("top : "+ player.pos.x, player.pos.y)
       continue
     }
     if(platforms[i].intersects(player.right, {w: 10, h: PLAYER_SIZE-10})){
       player.vel.x = 0;
       player.updateOnCollideRight(platforms[i]);
-      console.log("right: "+ player.pos.x, player.pos.y, platforms[i])
+      //console.log("right: "+ player.pos.x, player.pos.y, platforms[i])
       continue
     }
     if(platforms[i].intersects(player.left, {w: 10, h: PLAYER_SIZE-10})){
       player.vel.x = 0;
       player.updateOnCollideLeft(platforms[i]);
-      console.log("left: "+ player.pos.x, player.pos.y)
+      //console.log("left: "+ player.pos.x, player.pos.y)
       continue
     }
   }

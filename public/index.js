@@ -1,3 +1,4 @@
+
 const BG_COLOUR = '#231f20';
 const FOOD_COLOUR = '#e66916';
 const PLAYER_SIZE = 75;
@@ -18,8 +19,11 @@ const joinGameBtn = document.getElementById('joinGameButton');
 const gameCodeInput = document.getElementById('gameCodeInput');
 const gameCodeDisplay = document.getElementById('gameCodeDisplay');
 
+const shootBtn = document.getElementById('shootButton');
+
 newGameBtn.addEventListener('click', newGame);
 joinGameBtn.addEventListener('click', joinGame);
+shootBtn.addEventListener('click', socket.emit('shooting', true));
 
 
 function newGame() {
@@ -42,6 +46,7 @@ var joy;
 function init() {
   initialScreen.style.display = "none";
   gameScreen.style.display = "block";
+  shootBtn.style.display = "block";
 
   canvas = document.getElementById('canvas');
   ctx = canvas.getContext('2d');
@@ -51,24 +56,34 @@ function init() {
   ctx.fillStyle = BG_COLOUR;
   ctx.fillRect(0, 0, canvas.width, canvas.height);
   gameActive = true;
+
+
   joy = new JoyStick('joyDiv');
 
   let joystick = document.getElementById('joyDiv');
   joystick.style.display = "block";
 
-
-
   setInterval(function(){
       socket.emit('keydown', joy.GetDir());
+  }, 50);
+
+  joyTwo = new JoyStick('joyWeapon')
+
+  let joystickWeapon = document.getElementById('JoyWeapon');
+
+  setInterval(function(){
+      socket.emit('weaponDir', {x: joyTwo.GetPosX(), y: joyTwo.GetPosY()});
   }, 50);
 }
 
 var bomba = new Image();
 var szeregowyOne = new Image();
 var szeregowyTwo = new Image();
+var weapon = new Image();
 bomba.src = './bomba.png';
 szeregowyOne.src = './szeregowy1.png';
 szeregowyTwo.src = './szeregowy2.png';
+weapon.src = './weapon.png';
 
 function paintGame(state) {
   ctx.fillStyle = BG_COLOUR;
@@ -89,10 +104,11 @@ function paintGame(state) {
 }
 
 function paintPlayer(playerState, size, p) {
+  const playerWeapon = playerState.weapon;
   const playerPos = playerState.pos;
-    ctx.drawImage(p, playerPos.x, playerPos.y, PLAYER_SIZE, PLAYER_SIZE);
-    ctx.fillStyle = "#fc4b04"
-  console.log("loaded")
+  ctx.drawImage(p, playerPos.x, playerPos.y, PLAYER_SIZE, PLAYER_SIZE);
+  drawImage(weapon, playerWeapon.pos.x,playerWeapon.pos.y, 0.1, playerWeapon.rotation);
+  ctx.setTransform(1,0,0,1,0,0);
 }
 
 function handleInit(number) {
@@ -142,3 +158,15 @@ function reset() {
   initialScreen.style.display = "block";
   gameScreen.style.display = "none";
 }
+
+function drawImage(image, x, y, scale, rotation){
+  ctx.setTransform(scale, 0, 0, scale, x, y); // sets scale and origin
+  ctx.rotate(rotation);
+
+  if((0 <= rotation && rotation <= 0.7853981633974483) || //turn the weapon
+    -0.7853981633974483 <= rotation && rotation <= 0){
+    ctx.scale(1, -1);
+  }
+  ctx.drawImage(image, -image.width / 2, -image.height / 2);
+  ctx.restore();
+} 

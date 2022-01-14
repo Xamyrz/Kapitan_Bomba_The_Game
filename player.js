@@ -1,3 +1,5 @@
+const { weapon } = require('./weapon');
+
 class player{
     constructor(width, height, x, y){
         this.h = height;
@@ -12,6 +14,8 @@ class player{
         this.left = {x: x, y: y+5};
         this.right= {x: x+width, y: y+5};
         this.i = 0
+        
+        this.weapon = new weapon(this);
     }
 
     updatePosition(){
@@ -25,14 +29,8 @@ class player{
         this.left.y = this.pos.y+5;
         this.right.x = this.pos.x+this.w-10;
         this.right.y = this.pos.y+5;
-        // this.top = {x: this.pos.x, y: this.pos.y};
-        // this.bottom = {x: this.pos.x, y: this.pos.y+this.h};
-        // this.left = {x: this.pos.x, y: this.pos.y};
-        // this.right = {x: this.pos.x+this.w, y: this.pos.y}
-        // while(this.i < 3){
-        //     console.log(this.pos)
-        //     this.i++;
-        // }
+
+        this.weapon.pos = {x: (this.w/2)+this.pos.x, y: this.h+this.pos.y-20};
     }
     updateOnCollideGround(platform){
         this.pos.y = platform.y-this.h;

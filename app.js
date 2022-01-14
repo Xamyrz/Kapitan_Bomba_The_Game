@@ -24,6 +24,8 @@ app.use('/', home);
 io.on('connection', client => {
 
   client.on('keydown', handleKeydown);
+  client.on('weaponDir', handleWeaponDir);
+  client.on('shooting', handleShooting);
   client.on('newGame', handleNewGame);
   client.on('joinGame', handleJoinGame);
 
@@ -94,7 +96,25 @@ io.on('connection', client => {
       state[roomName].players[client.number - 1].vel.y = jumping.y;
     }
   }
+
+  function handleWeaponDir(position) {
+    const roomName = clientRooms[client.id];
+    if (!roomName) {
+      return;
+    }
+    state[roomName].players[client.number - 1].weapon.weaponRotate(position);
+    //console.log("hi: "+state[roomName].players[client.number - 1].weapon.rotation)
+  }
+
+  function handleShooting(){
+    const roomName = clientRooms[client.id];
+    if (!roomName) {
+      return;
+    }
+    state[roomName].players[client.number - 1].weapon.shoot;
+  }
 });
+
 
 function startGameInterval(roomName) {
   var winnerOne;
@@ -110,17 +130,17 @@ function startGameInterval(roomName) {
       clearInterval(intervalIdOne);
     }
   }, 1000 / FRAME_RATE);
-  // const intervalIdTwo = setInterval(() => {
-  //   winnerTwo = gameLoop(state[roomName].players[1], state[roomName].platforms);
+  const intervalIdTwo = setInterval(() => {
+    winnerTwo = gameLoop(state[roomName].players[1], state[roomName].platforms);
     
-  //   if (!winnerTwo) {
-  //     emitGameState(roomName, state[roomName])
-  //   } else {
-  //     emitGameOver(roomName, winner);
-  //     state[roomName] = null;
-  //     clearInterval(intervalIdTwo);
-  //   }
-  // }, 1000 / FRAME_RATE);
+    if (!winnerTwo) {
+      emitGameState(roomName, state[roomName])
+    } else {
+      emitGameOver(roomName, winner);
+      state[roomName] = null;
+      clearInterval(intervalIdTwo);
+    }
+  }, 1000 / FRAME_RATE);
 }
 
 function emitGameState(room, gameState) {
