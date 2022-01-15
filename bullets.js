@@ -1,8 +1,14 @@
 class bullet{
-    constructor(player){
-        this.pos = {x: (player.w/2)+player.pos.x, y: player.h+player.pos.y}
-        this.prevXY = {y: null, x: null};
-        this.rotation = 3.14159265;
+    constructor(weapon, color, velocity) {
+        this.pos = weapon.pos
+        this.color = color
+        this.vel = velocity
+    }
+
+    updatePosition(){
+        this.pos.x += this.vel.x;
+        this.pos.y += this.vel.y;
+        console.log(this.vel);
     }
 }
 

@@ -23,7 +23,7 @@ const shootBtn = document.getElementById('shootButton');
 
 newGameBtn.addEventListener('click', newGame);
 joinGameBtn.addEventListener('click', joinGame);
-shootBtn.addEventListener('click', socket.emit('shooting', true));
+shootBtn.addEventListener('click', shoot);
 
 
 function newGame() {
@@ -109,6 +109,12 @@ function paintPlayer(playerState, size, p) {
   ctx.drawImage(p, playerPos.x, playerPos.y, PLAYER_SIZE, PLAYER_SIZE);
   drawImage(weapon, playerWeapon.pos.x,playerWeapon.pos.y, 0.1, playerWeapon.rotation);
   ctx.setTransform(1,0,0,1,0,0);
+}
+
+function shoot(){
+  if(gameActive){
+    socket.emit('shooting', true);
+  }
 }
 
 function handleInit(number) {

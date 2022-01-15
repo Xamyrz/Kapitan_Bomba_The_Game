@@ -35,6 +35,8 @@ function gameLoop(player, platforms) {
 
   playerCollisions(player, platforms);
 
+  bulletMovement(player.weapon);
+
   return;
 }
 function playerCollisions(player, platforms){
@@ -94,6 +96,13 @@ function playerGravity(player){
       player.falling = true;
       player.jumping = false;
     }
+  }
+}
+
+function bulletMovement(weapon){
+  for(i=0; i<weapon.bullets.length; i++){
+    weapon.bullets[i].updatePosition();
+    console.log(weapon.bullets[i].pos.x, weapon.bullets[i].pos.y)
   }
 }
 
