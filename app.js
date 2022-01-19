@@ -107,7 +107,6 @@ io.on('connection', client => {
   }
 
   function handleShooting(){
-    console.log("handleShoot")
     const roomName = clientRooms[client.id];
     if (!roomName) {
       return;

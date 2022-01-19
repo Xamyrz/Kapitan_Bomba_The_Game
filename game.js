@@ -1,3 +1,4 @@
+const { bullet } = require('./bullets');
 const { GRID_SIZE } = require('./constants');
 const { GRAVITY } = require('./constants');
 const { PLAYER_SIZE } = require('./constants');
@@ -35,7 +36,7 @@ function gameLoop(player, platforms) {
 
   playerCollisions(player, platforms);
 
-  bulletMovement(player.weapon);
+  bulletMovement(player.weapon, platforms);
 
   return;
 }
@@ -99,10 +100,22 @@ function playerGravity(player){
   }
 }
 
-function bulletMovement(weapon){
-  for(i=0; i<weapon.bullets.length; i++){
+function bulletMovement(weapon, platforms){
+  for(i=0 ; i<weapon.bullets.length; i++){
     weapon.bullets[i].updatePosition();
-    console.log(weapon.bullets[i].pos.x, weapon.bullets[i].pos.y)
+    //bullet out of canvas
+    if (weapon.bullets[i].pos.x + weapon.bullets[i].radius < 0 || weapon.bullets[i].pos.x - weapon.bullets[i].pos.radius > GRID_SIZE || weapon.bullets[i].pos.y + weapon.bullets[i].radius < 0 || weapon.bullets[i].pos.y - weapon.bullets[i].radius > GRID_SIZE) {
+      weapon.bullets.splice(i, 1);
+      i--; //fixes out of bounds after splice.
+      continue;
+    }
+    //bullet wall collision
+    for(j=0; i>-1 && j<platforms.length; j++){
+      if(platforms[j].intersects({x: weapon.bullets[i].pos.x-weapon.bullets[i].radius, y:weapon.bullets[i].pos.y-weapon.bullets[i].radius}, {w: weapon.bullets[i].radius*2, h: weapon.bullets[i].radius*2})){
+        weapon.bullets.splice(i, 1);
+        i--; //fixes out of bounds after splice.
+      }
+    }
   }
 }
 

@@ -34,7 +34,7 @@ class weapon{
     }
 
     shoot(){
-        const angle = Math.atan2(this.joystick.y - this.pos.y, this.joystick.x - this.pos.x)
+        const angle = Math.atan2(this.joystick.y - 100, this.joystick.x - 100)
         const velocity = {
             x: Math.cos(angle) * 5,
             y: Math.sin(angle) * 5

@@ -23,7 +23,9 @@ const shootBtn = document.getElementById('shootButton');
 
 newGameBtn.addEventListener('click', newGame);
 joinGameBtn.addEventListener('click', joinGame);
-shootBtn.addEventListener('click', shoot);
+
+shootBtn.addEventListener('touchstart', shoot, false);
+shootBtn.addEventListener('click', shoot, false);
 
 
 function newGame() {
@@ -72,7 +74,9 @@ function init() {
   let joystickWeapon = document.getElementById('JoyWeapon');
 
   setInterval(function(){
-      socket.emit('weaponDir', {x: joyTwo.GetPosX(), y: joyTwo.GetPosY()});
+      if(joyTwo.GetPosX() !== 100 && joyTwo.GetPosY() !== 100){
+        socket.emit('weaponDir', {x: joyTwo.GetPosX(), y: joyTwo.GetPosY()});
+      }
   }, 50);
 }
 
@@ -107,11 +111,15 @@ function paintPlayer(playerState, size, p) {
   const playerWeapon = playerState.weapon;
   const playerPos = playerState.pos;
   ctx.drawImage(p, playerPos.x, playerPos.y, PLAYER_SIZE, PLAYER_SIZE);
+  for(i = 0; i<playerWeapon.bullets.length; i++){
+    drawBullets(playerWeapon.bullets[i]);
+  }
   drawImage(weapon, playerWeapon.pos.x,playerWeapon.pos.y, 0.1, playerWeapon.rotation);
   ctx.setTransform(1,0,0,1,0,0);
 }
 
 function shoot(){
+  console.log("shoot")
   if(gameActive){
     socket.emit('shooting', true);
   }
@@ -175,4 +183,16 @@ function drawImage(image, x, y, scale, rotation){
   }
   ctx.drawImage(image, -image.width / 2, -image.height / 2);
   ctx.restore();
-} 
+}
+
+function drawBullets(bullet) {
+  // ctx.fillStyle = "orange"
+  // ctx.fillRect(bullet.pos.x, bullet.pos.y, bullet.radius, bullet.radius);
+  ctx.save()
+  ctx.globalAlpha = 1
+  ctx.beginPath()
+  ctx.arc(bullet.pos.x, bullet.pos.y, bullet.radius, 0, Math.PI * 2, false)
+  ctx.fillStyle = "orange"
+  ctx.fill()
+  ctx.restore()
+}

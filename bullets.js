@@ -3,12 +3,12 @@ class bullet{
         this.pos = weapon.pos
         this.color = color
         this.vel = velocity
+        this.radius = 5;
     }
 
     updatePosition(){
         this.pos.x += this.vel.x;
         this.pos.y += this.vel.y;
-        console.log(this.vel);
     }
 }
 
