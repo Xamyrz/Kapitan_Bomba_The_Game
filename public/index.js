@@ -84,10 +84,16 @@ var bomba = new Image();
 var szeregowyOne = new Image();
 var szeregowyTwo = new Image();
 var weapon = new Image();
+var fire = [new Image(), new Image(), new Image(), new Image()];
 bomba.src = './bomba.png';
 szeregowyOne.src = './szeregowy1.png';
 szeregowyTwo.src = './szeregowy2.png';
 weapon.src = './weapon.png';
+fire[0].src = './fire1.png'
+fire[1].src = './fire2.png'
+fire[2].src = './fire3.png'
+fire[3].src = './fire4.png'
+
 
 function paintGame(state) {
   ctx.fillStyle = BG_COLOUR;
@@ -114,12 +120,16 @@ function paintPlayer(playerState, size, p) {
   for(i = 0; i<playerWeapon.bullets.length; i++){
     drawBullets(playerWeapon.bullets[i]);
   }
+  if(playerWeapon.shooting){
+    var rand = Math.floor(Math.random() * 4) + 0;
+    console.log(playerWeapon.fire.x, playerWeapon.fire.y);
+    ctx.drawImage(fire[rand], playerWeapon.fire.x-20, playerWeapon.fire.y-20, 40, 40);
+  }
   drawImage(weapon, playerWeapon.pos.x,playerWeapon.pos.y, 0.1, playerWeapon.rotation);
   ctx.setTransform(1,0,0,1,0,0);
 }
 
 function shoot(){
-  console.log("shoot")
   if(gameActive){
     socket.emit('shooting', true);
   }

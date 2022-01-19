@@ -7,6 +7,8 @@ class weapon{
         this.rotation = 3.14159265;
         this.joystick = {x: 50, y:100}
 
+        this.shooting = false;
+        this.fire = this.pos;
         this.bullets = [];
     }
 
@@ -35,10 +37,14 @@ class weapon{
 
     shoot(){
         const angle = Math.atan2(this.joystick.y - 100, this.joystick.x - 100)
+        const cos = Math.cos(angle);
+        const sin = Math.sin(angle);
         const velocity = {
-            x: Math.cos(angle) * 5,
-            y: Math.sin(angle) * 5
+            x: cos * 5,
+            y: sin * 5
         }
+        this.fire.x = (cos * 40) + this.pos.x
+        this.fire.y = (sin * 40) + this.pos.y
         this.bullets.push(new bullet(this, 'white', velocity))
     }
 }

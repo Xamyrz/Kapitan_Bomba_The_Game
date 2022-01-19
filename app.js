@@ -111,6 +111,7 @@ io.on('connection', client => {
     if (!roomName) {
       return;
     }
+    state[roomName].players[client.number - 1].weapon.shooting = true;
     state[roomName].players[client.number - 1].weapon.shoot();
   }
 });
@@ -118,12 +119,13 @@ io.on('connection', client => {
 
 function startGameInterval(roomName) {
   var winnerOne;
-  var winnderTwo;
+  var winnerTwo;
   const intervalIdOne = setInterval(() => {
     winnerOne = gameLoop(state[roomName].players[0], state[roomName].platforms);
     
     if (!winnerOne) {
       emitGameState(roomName, state[roomName])
+      state[roomName].players[0].weapon.shooting = false;
     } else {
       emitGameOver(roomName, winner);
       state[roomName] = null;
@@ -135,6 +137,7 @@ function startGameInterval(roomName) {
     
     if (!winnerTwo) {
       emitGameState(roomName, state[roomName])
+      state[roomName].players[1].weapon.shooting = false;
     } else {
       emitGameOver(roomName, winner);
       state[roomName] = null;
