@@ -14,6 +14,7 @@ socket.on('tooManyPlayers', handleTooManyPlayers);
 
 const gameScreen = document.getElementById('gameScreen');
 const initialScreen = document.getElementById('initialScreen');
+const controls = document.getElementById('controls');
 const newGameBtn = document.getElementById('newGameButton');
 const joinGameBtn = document.getElementById('joinGameButton');
 const gameCodeInput = document.getElementById('gameCodeInput');
@@ -21,8 +22,13 @@ const gameCodeDisplay = document.getElementById('gameCodeDisplay');
 
 const shootBtn = document.getElementById('shootButton');
 
+const toggleGameScreenBtn = document.getElementById("toggleGameScreenButton");
+const toggleControlsBtn = document.getElementById("toggleControlsButton");
+
 newGameBtn.addEventListener('click', newGame);
 joinGameBtn.addEventListener('click', joinGame);
+toggleControlsBtn.addEventListener('click', toggleControls);
+toggleGameScreenBtn.addEventListener('click', toggleGameScreen);
 
 shootBtn.addEventListener('touchstart', shoot, false);
 shootBtn.addEventListener('click', shoot, false);
@@ -38,6 +44,25 @@ function joinGame() {
   const code = gameCodeInput.value;
   socket.emit('joinGame', code);
   init();
+}
+
+function toggleGameScreen(){
+  let screen = document.getElementById("section");
+  if (gameScreen.style.display === "none") {
+    screen.style.display = "block";
+    gameScreen.style.display = "block";
+  } else {
+    screen.style.display = "none";
+    gameScreen.style.display = "none";
+  }
+}
+
+function toggleControls(){
+  if (controls.style.display === "none") {
+    controls.style.display = "block";
+  } else {
+    controls.style.display = "none";
+  }
 }
 
 let canvas, ctx;
@@ -70,8 +95,6 @@ function init() {
   }, 50);
 
   joyTwo = new JoyStick('joyWeapon')
-
-  let joystickWeapon = document.getElementById('JoyWeapon');
 
   setInterval(function(){
       if(joyTwo.GetPosX() !== 100 && joyTwo.GetPosY() !== 100){
@@ -108,12 +131,12 @@ function paintGame(state) {
     ctx.fillStyle = platforms[i].color;
     ctx.fillRect(platforms[i].x, platforms[i].y, platforms[i].w, platforms[i].h);
   }
-  paintPlayer(state.players[0], size, bomba);
-  paintPlayer(state.players[1], size, szeregowyOne)
+  paintPlayer(state.players[0], bomba);
+  paintPlayer(state.players[1], szeregowyOne)
   //paintPlayer(state.players[2], size, szeregowytwo)
 }
 
-function paintPlayer(playerState, size, p) {
+function paintPlayer(playerState, p) {
   const playerWeapon = playerState.weapon;
   const playerPos = playerState.pos;
   ctx.drawImage(p, playerPos.x, playerPos.y, PLAYER_SIZE, PLAYER_SIZE);
@@ -122,7 +145,6 @@ function paintPlayer(playerState, size, p) {
   }
   if(playerWeapon.shooting){
     var rand = Math.floor(Math.random() * 4) + 0;
-    console.log(playerWeapon.fire.x, playerWeapon.fire.y);
     ctx.drawImage(fire[rand], playerWeapon.fire.x-20, playerWeapon.fire.y-20, 40, 40);
   }
   drawImage(weapon, playerWeapon.pos.x,playerWeapon.pos.y, 0.1, playerWeapon.rotation);
@@ -143,8 +165,10 @@ function handleGameState(gameState) {
   if (!gameActive) {
     return;
   }
-  gameState = JSON.parse(gameState);
-  requestAnimationFrame(() => paintGame(gameState));
+  if(gameScreen.style.display === "block"){
+    gameState = JSON.parse(gameState);
+    requestAnimationFrame(() => paintGame(gameState));
+  }
 }
 
 function handleGameOver(data) {

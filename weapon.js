@@ -10,6 +10,7 @@ class weapon{
         this.shooting = false;
         this.fire = this.pos;
         this.bullets = [];
+        this.fireCounter = 0;
     }
 
     weaponRotate(joystick){

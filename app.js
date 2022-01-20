@@ -125,7 +125,6 @@ function startGameInterval(roomName) {
     
     if (!winnerOne) {
       emitGameState(roomName, state[roomName])
-      state[roomName].players[0].weapon.shooting = false;
     } else {
       emitGameOver(roomName, winner);
       state[roomName] = null;
@@ -137,7 +136,6 @@ function startGameInterval(roomName) {
     
     if (!winnerTwo) {
       emitGameState(roomName, state[roomName])
-      state[roomName].players[1].weapon.shooting = false;
     } else {
       emitGameOver(roomName, winner);
       state[roomName] = null;
