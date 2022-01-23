@@ -1,7 +1,7 @@
 {
-  "name": "YouTube-Sync",
+  "name": "Kapitan-Bomba",
   "version": "1.0.0",
-  "description": "Youtube-Sync",
+  "description": "Kapitan-Bomba",
   "main": "app.js",
   "dependencies": {
     "ejs": "^2.5.9",
