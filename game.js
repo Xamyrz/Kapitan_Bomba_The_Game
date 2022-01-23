@@ -21,9 +21,10 @@ function initGame() {
 
 function createGameState() {
   return {
-    players: [new player(PLAYER_SIZE,PLAYER_SIZE, 390, 10), new player(PLAYER_SIZE,PLAYER_SIZE, 200, 300)],
+    players: [],
     platforms: levelOne(),
     gridsize: GRID_SIZE,
+    gameEnded: false,
   };
 }
 function gameLoop(player, platforms) {

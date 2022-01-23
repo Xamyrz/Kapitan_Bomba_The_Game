@@ -8,10 +8,15 @@ const { initGame, gameLoop, getUpdatedVelocity,isJumping } = require('./game');
 const { FRAME_RATE } = require('./constants');
 const { makeid } = require('./utils');
 
+const { PLAYER_SIZE } = require('./constants');
+const { player } = require('./player');
+
 const state = {};
 const clientRooms = {};
+let playerRooms = {}
 
-var home = require('./routes/index')
+var home = require('./routes/index');
+const { CLIENT_RENEG_WINDOW } = require('tls');
 
 room = 'abc';
 
@@ -28,6 +33,7 @@ io.on('connection', client => {
   client.on('shooting', handleShooting);
   client.on('newGame', handleNewGame);
   client.on('joinGame', handleJoinGame);
+  client.on('joinSpectate', handleSpectate);
 
   function handleJoinGame(roomName) {
     const room = io.sockets.adapter.rooms[roomName];
@@ -45,101 +51,113 @@ io.on('connection', client => {
     if (numClients === 0) {
       client.emit('unknownCode');
       return;
-    } else if (numClients > 1) { //to be changed "more players"
+    } else if (playerRooms[roomName].length > 3) { //to be changed "more players"
       client.emit('tooManyPlayers');
       return;
     }
-
+    playerRooms[roomName].push(client.id);
+    console.log(playerRooms[roomName])
     clientRooms[client.id] = roomName;
+    console.log(playerRooms[roomName]);
 
     client.join(roomName);
-    client.number = numClients+1;
-    client.emit('init', numClients+1);
-    if(numClients === 1){ //to be changed "more players"
-      startGameInterval(roomName);
+    client.emit('init', room.player); //to be changed
+    if(playerRooms[roomName].length < 4){ //to be changed "more players"
+      startPlayerInterval(roomName, playerRooms[roomName].length-1);
+    }
+  }
+
+  function handleSpectate(roomName) {
+    if(playerRooms[roomName]){
+      client.join(roomName);
+      client.emit('init', 0);
     }
   }
 
   function handleNewGame() {
     let roomName = makeid(5);
-    console.log("newgame")
+    playerRooms[roomName] = [];
     clientRooms[client.id] = roomName;
     client.emit('gameCode', roomName);
 
     state[roomName] = initGame();
-
+    
     client.join(roomName);
-    client.number = 1;
-    client.emit('init', 1);
+    client.emit('init', 0);
+    startEmitInterval(roomName);
   }
 
   function handleKeydown(keyCode) {
     const roomName = clientRooms[client.id];
-    if (!roomName) {
+    if (!roomName || playerRooms[roomName].indexOf(client.id) === -1) {
       return;
     }
+
+    const playerIndex = playerRooms[roomName].indexOf(client.id);
 
     const vel = getUpdatedVelocity(keyCode);
     const jumping = isJumping(keyCode)
 
     if (vel && state[roomName].players != null) { //to be fixed, allows for slow falling
-      if(state[roomName].players[client.number - 1].falling){
-        state[roomName].players[client.number - 1].vel.x = vel.x;
+      if(state[roomName].players[playerIndex].falling){
+        state[roomName].players[playerIndex].vel.x = vel.x;
       }else{
-        state[roomName].players[client.number - 1].vel = vel;
+        state[roomName].players[playerIndex].vel = vel;
       }
     }
-    if(jumping && !state[roomName].players[client.number - 1].jumping && !state[roomName].players[client.number - 1].falling){
+    if(jumping && !state[roomName].players[playerIndex].jumping && !state[roomName].players[playerIndex].falling){
       // console.log(jumping.jumping)
-      state[roomName].players[client.number - 1].jumping = jumping.jumping;
-      state[roomName].players[client.number - 1].vel.x = jumping.x;
-      state[roomName].players[client.number - 1].vel.y = jumping.y;
+      state[roomName].players[playerIndex].jumping = jumping.jumping;
+      state[roomName].players[playerIndex].vel.x = jumping.x;
+      state[roomName].players[playerIndex].vel.y = jumping.y;
     }
   }
 
   function handleWeaponDir(position) {
     const roomName = clientRooms[client.id];
-    if (!roomName) {
+    if (!roomName || playerRooms[roomName].indexOf(client.id) === -1) {
       return;
     }
-    state[roomName].players[client.number - 1].weapon.weaponRotate(position);
+
+    const playerIndex = playerRooms[roomName].indexOf(client.id);
+    state[roomName].players[playerIndex].weapon.weaponRotate(position);
     //console.log("hi: "+state[roomName].players[client.number - 1].weapon.rotation)
   }
 
   function handleShooting(){
     const roomName = clientRooms[client.id];
-    if (!roomName) {
+    if (!roomName || playerRooms[roomName].indexOf(client.id) === -1) {
       return;
     }
-    state[roomName].players[client.number - 1].weapon.shooting = true;
-    state[roomName].players[client.number - 1].weapon.shoot();
+
+    const playerIndex = playerRooms[roomName].indexOf(client.id);
+
+    state[roomName].players[playerIndex].weapon.shooting = true;
+    state[roomName].players[playerIndex].weapon.shoot();
   }
 });
 
 
-function startGameInterval(roomName) {
-  var winnerOne;
-  var winnerTwo;
-  const intervalIdOne = setInterval(() => {
-    winnerOne = gameLoop(state[roomName].players[0], state[roomName].platforms);
+function startPlayerInterval(roomName, playerIndex) {
+  var loop;
+  state[roomName].players.push(new player(PLAYER_SIZE,PLAYER_SIZE, 200, 300));
+  const intervalId = setInterval(() => {
+    loop = gameLoop(state[roomName].players[playerIndex], state[roomName].platforms);
     
-    if (!winnerOne) {
-      emitGameState(roomName, state[roomName])
-    } else {
-      emitGameOver(roomName, winner);
-      state[roomName] = null;
-      clearInterval(intervalIdOne);
+    if (state[roomName].gameEnded) {
+      clearInterval(intervalId);
     }
   }, 1000 / FRAME_RATE);
-  const intervalIdTwo = setInterval(() => {
-    winnerTwo = gameLoop(state[roomName].players[1], state[roomName].platforms);
-    
-    if (!winnerTwo) {
-      emitGameState(roomName, state[roomName])
-    } else {
+}
+
+function startEmitInterval(roomName) {
+  const emitInterval = setInterval(() => {
+    if (state[roomName].gameEnded) {
       emitGameOver(roomName, winner);
       state[roomName] = null;
-      clearInterval(intervalIdTwo);
+      clearInterval(emitInterval);
+    } else {
+      emitGameState(roomName, state[roomName])
     }
   }, 1000 / FRAME_RATE);
 }
@@ -151,6 +169,7 @@ function emitGameState(room, gameState) {
 }
 
 function emitGameOver(room, winner) {
+  //delete playerRooms[room];
   io.sockets.in(room)
     .emit('gameOver', JSON.stringify({ winner }));
 }

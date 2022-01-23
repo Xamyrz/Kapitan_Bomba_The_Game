@@ -17,6 +17,7 @@ const initialScreen = document.getElementById('initialScreen');
 const controls = document.getElementById('controls');
 const newGameBtn = document.getElementById('newGameButton');
 const joinGameBtn = document.getElementById('joinGameButton');
+const spectateBtn = document.getElementById('joinSpectateBtn');
 const gameCodeInput = document.getElementById('gameCodeInput');
 const gameCodeDisplay = document.getElementById('gameCodeDisplay');
 
@@ -27,6 +28,7 @@ const toggleControlsBtn = document.getElementById("toggleControlsButton");
 
 newGameBtn.addEventListener('click', newGame);
 joinGameBtn.addEventListener('click', joinGame);
+spectateBtn.addEventListener('click', spectateGame);
 toggleControlsBtn.addEventListener('click', toggleControls);
 toggleGameScreenBtn.addEventListener('click', toggleGameScreen);
 
@@ -43,6 +45,11 @@ function newGame() {
 function joinGame() {
   const code = gameCodeInput.value;
   socket.emit('joinGame', code);
+  init();
+}
+
+function spectateGame(){
+  socket.emit('joinSpectate', gameCodeInput.value);
   init();
 }
 
@@ -104,13 +111,13 @@ function init() {
 }
 
 var bomba = new Image();
-var szeregowyOne = new Image();
-var szeregowyTwo = new Image();
+var janusz = new Image();
+var sebek = new Image();
 var weapon = new Image();
 var fire = [new Image(), new Image(), new Image(), new Image()];
 bomba.src = './bomba.png';
-szeregowyOne.src = './szeregowy1.png';
-szeregowyTwo.src = './szeregowy2.png';
+janusz.src = './janusz.png';
+sebek.src = './sebek.png';
 weapon.src = './weapon.png';
 fire[0].src = './fire1.png'
 fire[1].src = './fire2.png'
@@ -122,7 +129,6 @@ function paintGame(state) {
   ctx.fillStyle = BG_COLOUR;
   ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-  // const food = state.food;
   const gridsize = state.gridsize;
   const size = gridsize;
   const platforms = state.platforms;
@@ -131,8 +137,38 @@ function paintGame(state) {
     ctx.fillStyle = platforms[i].color;
     ctx.fillRect(platforms[i].x, platforms[i].y, platforms[i].w, platforms[i].h);
   }
-  paintPlayer(state.players[0], bomba);
-  paintPlayer(state.players[1], szeregowyOne)
+  console.log(state.players.length);
+
+  if(state.players.length)
+  switch (state.players.length) {
+    case 1:
+      paintPlayer(state.players[0], bomba);
+      break;
+    case 2:
+      paintPlayer(state.players[0], bomba);
+      paintPlayer(state.players[1], janusz);
+      break;
+    case 3:
+      paintPlayer(state.players[0], bomba);
+      paintPlayer(state.players[1], janusz);
+      paintPlayer(state.players[2], sebek);
+  }
+  // for(i=0; i<state.players.length; i++){
+  //   if(i === 0){
+  //     paintPlayer(state.players[i], bomba);
+  //     continue;
+  //   }
+  //   if(i === 1){
+  //     paintPlayer(state.players[i], janusz);
+  //     continue;
+  //   }
+  //   // if(i === 2){
+  //   //   paintPlayer(state.players[i], sebek);
+  //   //   continue;
+  //   // }
+  // }
+  // paintPlayer(state.players[0], bomba);
+  // paintPlayer(state.players[1], janusz)
   //paintPlayer(state.players[2], size, szeregowytwo)
 }
 
