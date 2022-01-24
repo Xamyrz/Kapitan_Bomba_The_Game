@@ -27,6 +27,7 @@ function createGameState() {
     platforms: levelOne(),
     gridsize: GRID_SIZE,
     gameEnded: false,
+    winner: {}
   };
 }
 function gameLoop(player, platforms, players) {
@@ -128,8 +129,9 @@ function bulletMovement(player, platforms, players){
       if((players[key] instanceof Enemy) && players[key].intersects({x: player.weapon.bullets[i].pos.x-player.weapon.bullets[i].radius, y: player.weapon.bullets[i].pos.y-player.weapon.bullets[i].radius}, {w: player.weapon.bullets[i].radius*2, h: player.weapon.bullets[i].radius*2})){
         players[key].health--;
         player.weapon.bullets.splice(i, 1);
-        player.kills++;
-        console.log(player.kills);
+        if(players[key].health === 0){
+          player.kills++;
+        }
         i--;
         return;
       }

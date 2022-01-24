@@ -19,8 +19,6 @@ let playerRooms = {};
 var home = require('./routes/index');
 const { CLIENT_RENEG_WINDOW } = require('tls');
 
-room = 'abc';
-
 app.use(express.static(path.join(__dirname, 'public'))); 
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'ejs');
@@ -37,19 +35,19 @@ io.on('connection', client => {
   client.on('joinSpectate', handleSpectate);
 
   function handleJoinGame(roomName) {
-    const room = io.sockets.adapter.rooms[roomName];
+    // const room = io.sockets.clients(roomName);
+    // console.log(room);
+    // let allUsers;
+    // if (room) {
+    //   allUsers = room.sockets;
+    // }
 
-    let allUsers;
-    if (room) {
-      allUsers = room.sockets;
-    }
+    // let numClients = 0;
+    // if (allUsers) {
+    //   numClients = Object.keys(allUsers).length;
+    // }
 
-    let numClients = 0;
-    if (allUsers) {
-      numClients = Object.keys(allUsers).length;
-    }
-
-    if (numClients === 0) {
+    if (!playerRooms[roomName]) {
       client.emit('unknownCode');
       return;
     } else if (playerRooms[roomName].length > 3) {
@@ -57,12 +55,10 @@ io.on('connection', client => {
       return;
     }
     playerRooms[roomName].push(client.id);
-    console.log(playerRooms[roomName])
     clientRooms[client.id] = roomName;
-    console.log(playerRooms[roomName]);
 
     client.join(roomName);
-    client.emit('init', room.player); //to be changed
+    client.emit('init', playerRooms[roomName].length-1); //to be changed
     if(playerRooms[roomName].length < 4){ //to be changed "more players"
       startPlayerInterval(roomName, client.id);
     }
@@ -99,11 +95,7 @@ io.on('connection', client => {
 
   function handleKeydown(keyCode) {
     const roomName = clientRooms[client.id];
-    if (!roomName || playerRooms[roomName].indexOf(client.id) === -1) {
-      return;
-    }
-
-    if(!state[roomName].players[client.id]){
+    if (!roomName || !playerRooms[roomName] || !state[roomName].players[client.id]) {
       return;
     }
 
@@ -118,7 +110,6 @@ io.on('connection', client => {
       }
     }
     if(jumping && !state[roomName].players[client.id].jumping && !state[roomName].players[client.id].falling){
-      // console.log(jumping.jumping)
       state[roomName].players[client.id].jumping = jumping.jumping;
       state[roomName].players[client.id].vel.x = jumping.x;
       state[roomName].players[client.id].vel.y = jumping.y;
@@ -127,17 +118,16 @@ io.on('connection', client => {
 
   function handleWeaponDir(position) {
     const roomName = clientRooms[client.id];
-    if (!roomName || playerRooms[roomName].indexOf(client.id) === -1) {
+    if (!roomName || !state[roomName].players[client.id]) {
       return;
     }
 
     state[roomName].players[client.id].weapon.weaponRotate(position);
-    //console.log("hi: "+state[roomName].players[client.number - 1].weapon.rotation)
   }
 
   function handleShooting(){
     const roomName = clientRooms[client.id];
-    if (!roomName || playerRooms[roomName].indexOf(client.id) === -1) {
+    if (!roomName || !state[roomName].players[client.id]) {
       return;
     }
 
@@ -156,6 +146,11 @@ function startPlayerInterval(roomName, playerId) {
   const intervalId = setInterval(() => {
     loop = gameLoop(player, state[roomName].platforms, state[roomName].enemies);
     
+    if(state[roomName].players[playerId].kills === 1){
+      state[roomName].gameEnded = true;
+      state[roomName].winner = state[roomName].players[playerId];
+    }
+
     if (state[roomName].gameEnded || player.health <= 0) {
       clearInterval(intervalId);
       delete state[roomName].players[playerId];
@@ -166,10 +161,9 @@ function startPlayerInterval(roomName, playerId) {
 function startEmitInterval(roomName) {
   const emitInterval = setInterval(() => {
     if (state[roomName].gameEnded) {
-      emitGameOver(roomName, winner);
+      emitGameOver(roomName, state[roomName].winner);
       delete state[roomName];
       delete playerRooms[roomName];
-      console.log(playerRooms, state[roomName]);
       clearInterval(emitInterval);
     } else {
       emitGameState(roomName, state[roomName])
@@ -205,6 +199,10 @@ function emitGameOver(room, winner) {
   //delete playerRooms[room];
   io.sockets.in(room)
     .emit('gameOver', JSON.stringify({ winner }));
+
+    console.log(io.sockets.in(room))
+    io.socketsLeave(room);
+    console.log(io.sockets.in(room))
 }
 
 

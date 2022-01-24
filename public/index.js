@@ -45,7 +45,6 @@ function newGame() {
 function joinGame() {
   const code = gameCodeInput.value;
   socket.emit('joinGame', code);
-  init();
 }
 
 function spectateGame(){
@@ -158,19 +157,6 @@ function paintGame(state) {
       paintPlayer(state.players[key], sebek);
     }
   });
-  // switch (state.players.length) {
-  //   case 1:
-  //     paintPlayer(state.players[0], bomba);
-  //     break;
-  //   case 2:
-  //     paintPlayer(state.players[0], bomba);
-  //     paintPlayer(state.players[1], janusz);
-  //     break;
-  //   case 3:
-  //     paintPlayer(state.players[0], bomba);
-  //     paintPlayer(state.players[1], janusz);
-  //     paintPlayer(state.players[2], sebek);
-  // }
 
   Object.keys(state.enemies).forEach(function(key){
     paintEnemy(state.enemies[key]);
@@ -216,6 +202,7 @@ function shoot(){
 
 function handleInit(number) {
   playerNumber = number;
+  init();
 }
 
 function handleGameState(gameState) {
@@ -234,13 +221,23 @@ function handleGameOver(data) {
   }
   data = JSON.parse(data);
 
-  // gameActive = false;
+  gameActive = false;
 
-  // if (data.winner === playerNumber) {
-  //   alert('You Win!');
-  // } else {
-  //   alert('You Lose :(');
-  // }
+  ctx.font = "30px Comic Sans MS";
+  ctx.fillStyle = "Yellow";
+  ctx.textAlign = "center";
+
+  if(data.winner.id === 0){
+    ctx.fillText("Kapitan Bomba!", canvas.width/2, canvas.height/2);
+  }
+  if(data.winner.id === 1){
+    ctx.fillText("Janusz!", canvas.width/2, canvas.height/2);
+  }
+  if(data.winner.id === 2){
+    ctx.fillText("Sebek!", canvas.width/2, canvas.height/2);
+  }
+
+  console.log(data.winner);
 }
 
 function handleGameCode(gameCode) {
