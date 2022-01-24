@@ -115,14 +115,22 @@ var janusz = new Image();
 var sebek = new Image();
 var weapon = new Image();
 var fire = [new Image(), new Image(), new Image(), new Image()];
+var kurvinox = [new Image(), new Image(), new Image()];
+var weaponEnemy = new Image();
 bomba.src = './bomba.png';
 janusz.src = './janusz.png';
 sebek.src = './sebek.png';
 weapon.src = './weapon.png';
-fire[0].src = './fire1.png'
-fire[1].src = './fire2.png'
-fire[2].src = './fire3.png'
-fire[3].src = './fire4.png'
+fire[0].src = './fire1.png';
+fire[1].src = './fire2.png';
+fire[2].src = './fire3.png';
+fire[3].src = './fire4.png';
+kurvinox[0].src = './kurvinox.png';
+kurvinox[1].src = './kurvinox2.png';
+kurvinox[2].src = './kurvinox3.png';
+weaponEnemy.src = './weapon2.png';
+
+
 
 
 function paintGame(state) {
@@ -137,9 +145,7 @@ function paintGame(state) {
     ctx.fillStyle = platforms[i].color;
     ctx.fillRect(platforms[i].x, platforms[i].y, platforms[i].w, platforms[i].h);
   }
-  console.log(state.players.length);
 
-  if(state.players.length)
   switch (state.players.length) {
     case 1:
       paintPlayer(state.players[0], bomba);
@@ -153,23 +159,17 @@ function paintGame(state) {
       paintPlayer(state.players[1], janusz);
       paintPlayer(state.players[2], sebek);
   }
-  // for(i=0; i<state.players.length; i++){
-  //   if(i === 0){
-  //     paintPlayer(state.players[i], bomba);
-  //     continue;
+
+  let j = 0;
+  while(j<state.enemies.length){
+    paintEnemy(state.enemies[j]);
+    j++;
+  }
+  // if(state.enemies.length !== 0){
+  //   for(i=0;i<state.enemies.length;i++){
+  //     paintEnemy(state.enemies[i]);
   //   }
-  //   if(i === 1){
-  //     paintPlayer(state.players[i], janusz);
-  //     continue;
-  //   }
-  //   // if(i === 2){
-  //   //   paintPlayer(state.players[i], sebek);
-  //   //   continue;
-  //   // }
   // }
-  // paintPlayer(state.players[0], bomba);
-  // paintPlayer(state.players[1], janusz)
-  //paintPlayer(state.players[2], size, szeregowytwo)
 }
 
 function paintPlayer(playerState, p) {
@@ -180,11 +180,22 @@ function paintPlayer(playerState, p) {
     drawBullets(playerWeapon.bullets[i]);
   }
   if(playerWeapon.shooting){
-    var rand = Math.floor(Math.random() * 4) + 0;
+    var rand = Math.floor(Math.random() * 4);
     ctx.drawImage(fire[rand], playerWeapon.fire.x-20, playerWeapon.fire.y-20, 40, 40);
   }
   drawImage(weapon, playerWeapon.pos.x,playerWeapon.pos.y, 0.1, playerWeapon.rotation);
   ctx.setTransform(1,0,0,1,0,0);
+}
+
+function paintEnemy(enemyState) {
+  const enemyWeapon = enemyState.weapon;
+  const enemyPos = enemyState.pos;
+  ctx.drawImage(kurvinox[enemyState.image], enemyPos.x, enemyPos.y, PLAYER_SIZE, PLAYER_SIZE);
+  for(i = 0; i<enemyWeapon.bullets.length; i++){
+    drawBullets(enemyWeapon.bullets[i]);
+  }
+  ctx.drawImage(weaponEnemy, enemyWeapon.pos.x, enemyWeapon.pos.y, 25, 25);
+  // ctx.setTransform(1,0,0,1,0,0);
 }
 
 function shoot(){
@@ -262,7 +273,7 @@ function drawBullets(bullet) {
   ctx.globalAlpha = 1
   ctx.beginPath()
   ctx.arc(bullet.pos.x, bullet.pos.y, bullet.radius, 0, Math.PI * 2, false)
-  ctx.fillStyle = "orange"
+  ctx.fillStyle = bullet.color;
   ctx.fill()
   ctx.restore()
 }

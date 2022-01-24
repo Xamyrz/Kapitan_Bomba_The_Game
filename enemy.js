@@ -1,22 +1,22 @@
-const { weapon } = require('./weapon');
+const { enemyWeapon } = require('./enemyWeapon');
 
-class player{
-    constructor(width, height, x, y){
+class enemy{
+    constructor(width, height, x, y, image){
         this.h = height;
         this.w = width;
         this.pos = {x: x, y: y};
+        this.image = image;
         this.jumping = false;
         this.falling = true;
-        this.health = 10;
+        this.health = 5;
         this.vel = {x: 0, y: 0};
 
         this.top = {x: x+5, y: y};
         this.bottom = {x: x+5, y: y+height};
         this.left = {x: x, y: y+5};
         this.right= {x: x+width, y: y+5};
-        this.i = 0
         
-        this.weapon = new weapon(this);
+        this.weapon = new enemyWeapon(this);
     }
 
     updatePosition(){
@@ -31,7 +31,7 @@ class player{
         this.right.x = this.pos.x+this.w-10;
         this.right.y = this.pos.y+5;
 
-        this.weapon.pos = {x: (this.w/2)+this.pos.x, y: this.h+this.pos.y-20};
+        this.weapon.pos = {x: this.pos.x, y: this.pos.y+10};
     }
     updateOnCollideGround(platform){
         this.pos.y = platform.y-this.h;
@@ -59,5 +59,5 @@ class player{
 }
 
 module.exports = {
-    player,
+    enemy,
 }

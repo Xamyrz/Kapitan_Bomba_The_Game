@@ -10,10 +10,11 @@ const { makeid } = require('./utils');
 
 const { PLAYER_SIZE } = require('./constants');
 const { player } = require('./player');
+const { enemy } = require('./enemy');
 
 const state = {};
 const clientRooms = {};
-let playerRooms = {}
+let playerRooms = {};
 
 var home = require('./routes/index');
 const { CLIENT_RENEG_WINDOW } = require('tls');
@@ -64,6 +65,15 @@ io.on('connection', client => {
     client.emit('init', room.player); //to be changed
     if(playerRooms[roomName].length < 4){ //to be changed "more players"
       startPlayerInterval(roomName, playerRooms[roomName].length-1);
+    }
+    if(playerRooms[roomName].length > 1){
+      spawEnemies(roomName)
+      // const interval = setInterval(() => {
+      //   spawEnemies(roomName);
+      //   if (state[roomName].gameEnded) {
+      //     clearInterval(interval);
+      //   }
+      // }, 5000);
     }
   }
 
@@ -142,7 +152,7 @@ function startPlayerInterval(roomName, playerIndex) {
   var loop;
   state[roomName].players.push(new player(PLAYER_SIZE,PLAYER_SIZE, 200, 300));
   const intervalId = setInterval(() => {
-    loop = gameLoop(state[roomName].players[playerIndex], state[roomName].platforms);
+    loop = gameLoop(state[roomName].players[playerIndex], state[roomName].platforms, state[roomName].enemies);
     
     if (state[roomName].gameEnded) {
       clearInterval(intervalId);
@@ -154,10 +164,28 @@ function startEmitInterval(roomName) {
   const emitInterval = setInterval(() => {
     if (state[roomName].gameEnded) {
       emitGameOver(roomName, winner);
-      state[roomName] = null;
+      delete state[roomName];
+      delete playerRooms[roomName];
+      console.log(playerRooms, state[roomName]);
       clearInterval(emitInterval);
     } else {
       emitGameState(roomName, state[roomName])
+    }
+  }, 1000 / FRAME_RATE);
+}
+
+function spawEnemies(roomName){
+  state[roomName].enemies.push(new enemy(PLAYER_SIZE,PLAYER_SIZE, 400, 300, Math.floor(Math.random() * 3)));
+  const enemySpawned = state[roomName].enemies[state[roomName].enemies.length - 1];
+  const enemyIndex = state[roomName].enemies.length - 1;
+  const enemyInterval = setInterval(() => {
+    gameLoop(enemySpawned, state[roomName].platforms, state[roomName].players);
+    if(Math.floor(Math.random() * 30) === 25){
+      enemySpawned.weapon.shoot(state[roomName].players[Math.floor(Math.random() * state[roomName].players.length)])
+    }
+    if (state[roomName].gameEnded || enemySpawned.health === 0) {
+      state[roomName].enemies.splice(enemyIndex, 1);
+      clearInterval(enemyInterval);
     }
   }, 1000 / FRAME_RATE);
 }

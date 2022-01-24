@@ -2,7 +2,7 @@ const { bullet } = require('./bullets');
 
 class weapon{
     constructor(player){
-        this.pos = {x: (player.w/2)+player.pos.x, y: player.h+player.pos.y}
+        this.pos = {x: (player.w/2)+player.pos.x, y: player.h+player.pos.y-20}
         this.prevXY = {y: null, x: null};
         this.rotation = 3.14159265;
         this.joystick = {x: 50, y:100}
@@ -46,7 +46,7 @@ class weapon{
         }
         this.fire.x = (cos * 40) + this.pos.x
         this.fire.y = (sin * 40) + this.pos.y
-        this.bullets.push(new bullet(this, 'white', velocity))
+        this.bullets.push(new bullet(this, 'orange', velocity))
     }
 }
 
