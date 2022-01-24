@@ -1,13 +1,14 @@
 const { weapon } = require('./weapon');
 
-class player{
-    constructor(width, height, x, y){
+class Player{
+    constructor(width, height, x, y, id){
         this.h = height;
         this.w = width;
         this.pos = {x: x, y: y};
         this.jumping = false;
         this.falling = true;
         this.health = 10;
+        this.kills = 0;
         this.vel = {x: 0, y: 0};
 
         this.top = {x: x+5, y: y};
@@ -15,6 +16,7 @@ class player{
         this.left = {x: x, y: y+5};
         this.right= {x: x+width, y: y+5};
         this.i = 0
+        this.id = id;
         
         this.weapon = new weapon(this);
     }
@@ -59,5 +61,5 @@ class player{
 }
 
 module.exports = {
-    player,
+    Player,
 }

@@ -146,25 +146,35 @@ function paintGame(state) {
     ctx.fillRect(platforms[i].x, platforms[i].y, platforms[i].w, platforms[i].h);
   }
 
-  switch (state.players.length) {
-    case 1:
-      paintPlayer(state.players[0], bomba);
-      break;
-    case 2:
-      paintPlayer(state.players[0], bomba);
-      paintPlayer(state.players[1], janusz);
-      break;
-    case 3:
-      paintPlayer(state.players[0], bomba);
-      paintPlayer(state.players[1], janusz);
-      paintPlayer(state.players[2], sebek);
-  }
+  // console.log(state.players);
+  Object.keys(state.players).forEach(function(key){
+    if(state.players[key].id === 0){
+      paintPlayer(state.players[key], bomba);
+    }
+    if(state.players[key].id === 1){
+      paintPlayer(state.players[key], janusz);
+    }
+    if(state.players[key].id === 2){
+      paintPlayer(state.players[key], sebek);
+    }
+  });
+  // switch (state.players.length) {
+  //   case 1:
+  //     paintPlayer(state.players[0], bomba);
+  //     break;
+  //   case 2:
+  //     paintPlayer(state.players[0], bomba);
+  //     paintPlayer(state.players[1], janusz);
+  //     break;
+  //   case 3:
+  //     paintPlayer(state.players[0], bomba);
+  //     paintPlayer(state.players[1], janusz);
+  //     paintPlayer(state.players[2], sebek);
+  // }
 
-  let j = 0;
-  while(j<state.enemies.length){
-    paintEnemy(state.enemies[j]);
-    j++;
-  }
+  Object.keys(state.enemies).forEach(function(key){
+    paintEnemy(state.enemies[key]);
+  });
   // if(state.enemies.length !== 0){
   //   for(i=0;i<state.enemies.length;i++){
   //     paintEnemy(state.enemies[i]);

@@ -1,6 +1,6 @@
 const { enemyWeapon } = require('./enemyWeapon');
 
-class enemy{
+class Enemy{
     constructor(width, height, x, y, image){
         this.h = height;
         this.w = width;
@@ -59,5 +59,5 @@ class enemy{
 }
 
 module.exports = {
-    enemy,
+    Enemy,
 }

@@ -3,8 +3,8 @@ const { GRID_SIZE } = require('./constants');
 const { GRAVITY } = require('./constants');
 const { PLAYER_SIZE } = require('./constants');
 const { levelOne } = require('./levels');
-const { player } = require('./player');
-const { enemy } = require('./enemy');
+const { Player } = require('./player');
+const { Enemy } = require('./enemy');
 
 let fallCounter = 0
 
@@ -22,8 +22,8 @@ function initGame() {
 
 function createGameState() {
   return {
-    players: [],
-    enemies: [],
+    players: {},
+    enemies: {},
     platforms: levelOne(),
     gridsize: GRID_SIZE,
     gameEnded: false,
@@ -38,7 +38,7 @@ function gameLoop(player, platforms, players) {
 
   playerCollisions(player, platforms);
 
-  bulletMovement(player.weapon, platforms, players);
+  bulletMovement(player, platforms, players);
 
   shootingTime(player.weapon)
 
@@ -99,35 +99,57 @@ function playerGravity(player){
   }
 }
 
-function bulletMovement(weapon, platforms, players){
-  for(i=0 ; i<weapon.bullets.length; i++){
-    weapon.bullets[i].updatePosition();
+function bulletMovement(player, platforms, players){
+  for(i=0 ; i<player.weapon.bullets.length; i++){
+    player.weapon.bullets[i].updatePosition();
     //bullet out of canvas
-    if (weapon.bullets[i].pos.x + weapon.bullets[i].radius < 0 || weapon.bullets[i].pos.x - weapon.bullets[i].pos.radius > GRID_SIZE || weapon.bullets[i].pos.y + weapon.bullets[i].radius < 0 || weapon.bullets[i].pos.y - weapon.bullets[i].radius > GRID_SIZE) {
-      weapon.bullets.splice(i, 1);
+    if (player.weapon.bullets[i].pos.x + player.weapon.bullets[i].radius < 0 || player.weapon.bullets[i].pos.x - player.weapon.bullets[i].pos.radius > GRID_SIZE || player.weapon.bullets[i].pos.y + player.weapon.bullets[i].radius < 0 || player.weapon.bullets[i].pos.y - player.weapon.bullets[i].radius > GRID_SIZE) {
+      player.weapon.bullets.splice(i, 1);
       i--; //fixes out of bounds after splice.
       continue;
     }
     //bullet wall collision
     for(j=0; i>-1 && j<platforms.length; j++){
-      if(platforms[j].intersects({x: weapon.bullets[i].pos.x-weapon.bullets[i].radius, y:weapon.bullets[i].pos.y-weapon.bullets[i].radius}, {w: weapon.bullets[i].radius*2, h: weapon.bullets[i].radius*2})){
-        weapon.bullets.splice(i, 1);
+      if(platforms[j].intersects({x: player.weapon.bullets[i].pos.x-player.weapon.bullets[i].radius, y: player.weapon.bullets[i].pos.y-player.weapon.bullets[i].radius}, {w: player.weapon.bullets[i].radius*2, h: player.weapon.bullets[i].radius*2})){
+        player.weapon.bullets.splice(i, 1);
         i--; //fixes out of bounds after splice.
       }
     }
+    //bullet hits
+    Object.keys(players).forEach(function(key){
+      if(!player.weapon.bullets[i]) return;
 
-    for(z=0; i>-1 && z<players.length; z++){
-      if((players[z] instanceof player) && players[z].intersects({x: weapon.bullets[i].pos.x-weapon.bullets[i].radius, y:weapon.bullets[i].pos.y-weapon.bullets[i].radius}, {w: weapon.bullets[i].radius*2, h: weapon.bullets[i].radius*2})){
-        players[z].health--;
-        weapon.bullets.splice(i, 1);
+      if((players[key] instanceof Player) && players[key].intersects({x: player.weapon.bullets[i].pos.x-player.weapon.bullets[i].radius, y: player.weapon.bullets[i].pos.y-player.weapon.bullets[i].radius}, {w: player.weapon.bullets[i].radius*2, h: player.weapon.bullets[i].radius*2})){
+        players[key].health--;
+        player.weapon.bullets.splice(i, 1);
         i--;
+        return;
       }
-      if((players[z] instanceof enemy) && players[z].intersects({x: weapon.bullets[i].pos.x-weapon.bullets[i].radius, y:weapon.bullets[i].pos.y-weapon.bullets[i].radius}, {w: weapon.bullets[i].radius*2, h: weapon.bullets[i].radius*2})){
-        players[z].health--;
-        weapon.bullets.splice(i, 1);
+      if((players[key] instanceof Enemy) && players[key].intersects({x: player.weapon.bullets[i].pos.x-player.weapon.bullets[i].radius, y: player.weapon.bullets[i].pos.y-player.weapon.bullets[i].radius}, {w: player.weapon.bullets[i].radius*2, h: player.weapon.bullets[i].radius*2})){
+        players[key].health--;
+        player.weapon.bullets.splice(i, 1);
+        player.kills++;
+        console.log(player.kills);
         i--;
+        return;
       }
-    }
+
+    });
+    // for(z=0; i>-1 && z<players.length; z++){
+    //   if((players[z] instanceof Player) && players[z].intersects({x: player.weapon.bullets[i].pos.x-player.weapon.bullets[i].radius, y: player.weapon.bullets[i].pos.y-player.weapon.bullets[i].radius}, {w: player.weapon.bullets[i].radius*2, h: player.weapon.bullets[i].radius*2})){
+    //     players[z].health--;
+    //     console.log(players[z].health);
+    //     player.weapon.bullets.splice(i, 1);
+    //     i--;
+    //   }
+    //   if((players[z] instanceof Enemy) && players[z].intersects({x: player.weapon.bullets[i].pos.x-player.weapon.bullets[i].radius, y: player.weapon.bullets[i].pos.y-player.weapon.bullets[i].radius}, {w: player.weapon.bullets[i].radius*2, h: player.weapon.bullets[i].radius*2})){
+    //     players[z].health--;
+    //     player.weapon.bullets.splice(i, 1);
+    //     player.kills++;
+    //     console.log(player.kills);
+    //     i--;
+    //   }
+    // }
 
   }
 }

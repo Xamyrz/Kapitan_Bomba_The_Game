@@ -9,8 +9,8 @@ const { FRAME_RATE } = require('./constants');
 const { makeid } = require('./utils');
 
 const { PLAYER_SIZE } = require('./constants');
-const { player } = require('./player');
-const { enemy } = require('./enemy');
+const { Player } = require('./player');
+const { Enemy } = require('./enemy');
 
 const state = {};
 const clientRooms = {};
@@ -52,7 +52,7 @@ io.on('connection', client => {
     if (numClients === 0) {
       client.emit('unknownCode');
       return;
-    } else if (playerRooms[roomName].length > 3) { //to be changed "more players"
+    } else if (playerRooms[roomName].length > 3) {
       client.emit('tooManyPlayers');
       return;
     }
@@ -64,7 +64,7 @@ io.on('connection', client => {
     client.join(roomName);
     client.emit('init', room.player); //to be changed
     if(playerRooms[roomName].length < 4){ //to be changed "more players"
-      startPlayerInterval(roomName, playerRooms[roomName].length-1);
+      startPlayerInterval(roomName, client.id);
     }
     if(playerRooms[roomName].length > 1){
       spawEnemies(roomName)
@@ -103,23 +103,25 @@ io.on('connection', client => {
       return;
     }
 
-    const playerIndex = playerRooms[roomName].indexOf(client.id);
+    if(!state[roomName].players[client.id]){
+      return;
+    }
 
     const vel = getUpdatedVelocity(keyCode);
     const jumping = isJumping(keyCode)
 
-    if (vel && state[roomName].players != null) { //to be fixed, allows for slow falling
-      if(state[roomName].players[playerIndex].falling){
-        state[roomName].players[playerIndex].vel.x = vel.x;
+    if (vel && state[roomName].players != null) { 
+      if(state[roomName].players[client.id].falling){
+        state[roomName].players[client.id].vel.x = vel.x;
       }else{
-        state[roomName].players[playerIndex].vel = vel;
+        state[roomName].players[client.id].vel = vel;
       }
     }
-    if(jumping && !state[roomName].players[playerIndex].jumping && !state[roomName].players[playerIndex].falling){
+    if(jumping && !state[roomName].players[client.id].jumping && !state[roomName].players[client.id].falling){
       // console.log(jumping.jumping)
-      state[roomName].players[playerIndex].jumping = jumping.jumping;
-      state[roomName].players[playerIndex].vel.x = jumping.x;
-      state[roomName].players[playerIndex].vel.y = jumping.y;
+      state[roomName].players[client.id].jumping = jumping.jumping;
+      state[roomName].players[client.id].vel.x = jumping.x;
+      state[roomName].players[client.id].vel.y = jumping.y;
     }
   }
 
@@ -129,8 +131,7 @@ io.on('connection', client => {
       return;
     }
 
-    const playerIndex = playerRooms[roomName].indexOf(client.id);
-    state[roomName].players[playerIndex].weapon.weaponRotate(position);
+    state[roomName].players[client.id].weapon.weaponRotate(position);
     //console.log("hi: "+state[roomName].players[client.number - 1].weapon.rotation)
   }
 
@@ -140,22 +141,24 @@ io.on('connection', client => {
       return;
     }
 
-    const playerIndex = playerRooms[roomName].indexOf(client.id);
 
-    state[roomName].players[playerIndex].weapon.shooting = true;
-    state[roomName].players[playerIndex].weapon.shoot();
+    state[roomName].players[client.id].weapon.shooting = true;
+    state[roomName].players[client.id].weapon.shoot();
   }
 });
 
 
-function startPlayerInterval(roomName, playerIndex) {
+function startPlayerInterval(roomName, playerId) {
   var loop;
-  state[roomName].players.push(new player(PLAYER_SIZE,PLAYER_SIZE, 200, 300));
+  state[roomName].players[playerId] = new Player(PLAYER_SIZE,PLAYER_SIZE, 200, 300, playerRooms[roomName].length-1);
+  const player = state[roomName].players[playerId]
+
   const intervalId = setInterval(() => {
-    loop = gameLoop(state[roomName].players[playerIndex], state[roomName].platforms, state[roomName].enemies);
+    loop = gameLoop(player, state[roomName].platforms, state[roomName].enemies);
     
-    if (state[roomName].gameEnded) {
+    if (state[roomName].gameEnded || player.health <= 0) {
       clearInterval(intervalId);
+      delete state[roomName].players[playerId];
     }
   }, 1000 / FRAME_RATE);
 }
@@ -175,16 +178,18 @@ function startEmitInterval(roomName) {
 }
 
 function spawEnemies(roomName){
-  state[roomName].enemies.push(new enemy(PLAYER_SIZE,PLAYER_SIZE, 400, 300, Math.floor(Math.random() * 3)));
-  const enemySpawned = state[roomName].enemies[state[roomName].enemies.length - 1];
-  const enemyIndex = state[roomName].enemies.length - 1;
+  const enemyId = makeid(20);
+  state[roomName].enemies[enemyId] = new Enemy(PLAYER_SIZE,PLAYER_SIZE, 400, 300, Math.floor(Math.random() * 3));
+  const enemySpawned = state[roomName].enemies[enemyId];
   const enemyInterval = setInterval(() => {
     gameLoop(enemySpawned, state[roomName].platforms, state[roomName].players);
-    if(Math.floor(Math.random() * 30) === 25){
-      enemySpawned.weapon.shoot(state[roomName].players[Math.floor(Math.random() * state[roomName].players.length)])
+    if(Math.floor(Math.random() * 30) === 25 && Object.keys(state[roomName].players).length !== 0){
+      let listKeys = Object.keys(state[roomName].players);
+      let randomIndex = Math.floor(Math.random() * listKeys.length);
+      enemySpawned.weapon.shoot(state[roomName].players[listKeys[randomIndex]])
     }
     if (state[roomName].gameEnded || enemySpawned.health === 0) {
-      state[roomName].enemies.splice(enemyIndex, 1);
+      delete state[roomName].enemies[enemyId];
       clearInterval(enemyInterval);
     }
   }, 1000 / FRAME_RATE);
