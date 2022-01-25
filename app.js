@@ -160,7 +160,7 @@ function startEmitInterval(roomName) {
     if(playerRooms[roomName].length === 0 || playerRooms[roomName].length === 1){
       gameIdling = true;
     }
-  }, 35000);
+  }, 120000);
   const emitInterval = setInterval(() => {
     let noPlayersLeft = (Object.keys(state[roomName].players).length === 0 && playerRooms[roomName].length > 0);
     if (state[roomName].gameEnded || noPlayersLeft || gameIdling) {
