@@ -110,7 +110,7 @@ io.on('connection', client => {
 
   function handleWeaponDir(position) {
     const roomName = clientRooms[client.id];
-    if (!roomName || !state[roomName].players[client.id]) {
+    if (!roomName || !state[roomName] || !state[roomName].players[client.id]) {
       return;
     }
 
@@ -119,7 +119,7 @@ io.on('connection', client => {
 
   function handleShooting(){
     const roomName = clientRooms[client.id];
-    if (!roomName || !state[roomName].players[client.id]) {
+    if (!roomName || !state[roomName] || !state[roomName].players[client.id]) {
       return;
     }
 
@@ -196,18 +196,6 @@ function spawEnemies(roomName){
       clearInterval(enemyInterval);
     }
   }, 1000 / FRAME_RATE);
-}
-
-function checkIdleGame(room){
-  let idling = false;
-  const idleGame = setTimeout(() => {
-    if(playerRooms[room].length === 0){
-      callback(true)
-      clearInterval(idleGame);
-    }else{
-      callback(false);
-    }
-  }, 5000);
 }
 
 function emitGameState(room, gameState) {

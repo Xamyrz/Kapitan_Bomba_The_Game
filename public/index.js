@@ -241,7 +241,7 @@ function handleGameOver(data) {
     ctx.font = "30px Comic Sans MS";
     ctx.fillStyle = "red";
     ctx.textAlign = "center";
-    ctx.fillText("Chuj wam w dupe...", canvas.width/2, canvas.height/2);
+    ctx.fillText("HUJ wam w dupe...", canvas.width/2, canvas.height/2);
   }
 
   console.log(data.winner);
