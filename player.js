@@ -7,7 +7,7 @@ class Player{
         this.pos = {x: x, y: y};
         this.jumping = false;
         this.falling = true;
-        this.health = 10;
+        this.health = 20;
         this.kills = 0;
         this.vel = {x: 0, y: 0};
 

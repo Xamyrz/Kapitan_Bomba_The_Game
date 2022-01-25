@@ -187,7 +187,7 @@ function spawEnemies(roomName){
       }
 
       gameLoop(enemySpawned, state[roomName].platforms, state[roomName].players);
-      if(Math.floor(Math.random() * 30) === 25 && Object.keys(state[roomName].players).length !== 0){
+      if(Math.floor(Math.random() * 150) === 25 && Object.keys(state[roomName].players).length !== 0){
         let listKeys = Object.keys(state[roomName].players);
         let randomIndex = Math.floor(Math.random() * listKeys.length);
         enemySpawned.weapon.shoot(state[roomName].players[listKeys[randomIndex]])
