@@ -141,7 +141,7 @@ function startPlayerInterval(roomName, playerId) {
     }else{
       loop = gameLoop(player, state[roomName].platforms, state[roomName].enemies);
       
-      if(state[roomName].players[playerId].kills === 1){
+      if(state[roomName].players[playerId].kills === 10){
         state[roomName].gameEnded = true;
         state[roomName].winner = state[roomName].players[playerId];
       }
