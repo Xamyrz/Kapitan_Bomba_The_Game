@@ -141,12 +141,12 @@ function startPlayerInterval(roomName, playerId) {
     }else{
       loop = gameLoop(player, state[roomName].platforms, state[roomName].enemies);
       
-      if(state[roomName].players[playerId].kills === 10){
+      if(state[roomName].players[playerId].kills === 1){
         state[roomName].gameEnded = true;
         state[roomName].winner = state[roomName].players[playerId];
       }
 
-      if (state[roomName].gameEnded || player.health <= 0) {
+      if (player.health <= 0) {
         clearInterval(intervalId);
         delete state[roomName].players[playerId];
       }
@@ -165,6 +165,7 @@ function startEmitInterval(roomName) {
     let noPlayersLeft = (Object.keys(state[roomName].players).length === 0 && playerRooms[roomName].length > 0);
     if (state[roomName].gameEnded || noPlayersLeft || gameIdling) {
       if(noPlayersLeft || gameIdling){
+        console.log(noPlayersLeft, gameIdling);
         state[roomName].winner = new Player(75,75,0,0,69);
       }
       emitGameOver(roomName, state[roomName].winner);
@@ -187,7 +188,7 @@ function spawEnemies(roomName){
       }
 
       gameLoop(enemySpawned, state[roomName].platforms, state[roomName].players);
-      if(Math.floor(Math.random() * 150) === 25 && Object.keys(state[roomName].players).length !== 0){
+      if(Math.floor(Math.random() * 75) === 25 && Object.keys(state[roomName].players).length !== 0){
         let listKeys = Object.keys(state[roomName].players);
         let randomIndex = Math.floor(Math.random() * listKeys.length);
         enemySpawned.weapon.shoot(state[roomName].players[listKeys[randomIndex]])
@@ -208,11 +209,18 @@ function emitGameOver(room, winner) {
   //delete playerRooms[room];
   delete state[room];
   delete playerRooms[room];
-  
-  io.sockets.in(room)
-    .emit('gameOver', JSON.stringify({ winner }));
 
-    io.socketsLeave(room);
+  let counter = 0
+  const emitGameOver = setInterval(() => {
+    if(counter < 10){
+      io.sockets.in(room)
+      .emit('gameOver', JSON.stringify({ winner }));
+      counter++;
+    }else{
+      clearInterval(emitGameOver);
+      io.socketsLeave(room);
+    }
+  }, 1000 / FRAME_RATE);
 }
 
 
