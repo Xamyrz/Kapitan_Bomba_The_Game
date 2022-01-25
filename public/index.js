@@ -1,6 +1,5 @@
 
 const BG_COLOUR = '#231f20';
-const FOOD_COLOUR = '#e66916';
 const PLAYER_SIZE = 75;
 
 const socket = io();
@@ -39,7 +38,6 @@ shootBtn.addEventListener('click', shoot, false);
 function newGame() {
   socket.emit('newGame');
   console.log("emitted")
-  init();
 }
 
 function joinGame() {
@@ -49,7 +47,6 @@ function joinGame() {
 
 function spectateGame(){
   socket.emit('joinSpectate', gameCodeInput.value);
-  init();
 }
 
 function toggleGameScreen(){
@@ -79,7 +76,6 @@ var joy;
 function init() {
   initialScreen.style.display = "none";
   gameScreen.style.display = "block";
-  shootBtn.style.display = "block";
 
   canvas = document.getElementById('canvas');
   ctx = canvas.getContext('2d');
@@ -89,8 +85,10 @@ function init() {
   ctx.fillStyle = BG_COLOUR;
   ctx.fillRect(0, 0, canvas.width, canvas.height);
   gameActive = true;
+}
 
-
+function showJoysticks(){
+  shootBtn.style.display = "block";
   joy = new JoyStick('joyDiv');
 
   let joystick = document.getElementById('joyDiv');
@@ -201,8 +199,11 @@ function shoot(){
 }
 
 function handleInit(number) {
-  playerNumber = number;
   init();
+  console.log(number);
+  if(number === 1){
+    showJoysticks();
+  }
 }
 
 function handleGameState(gameState) {
@@ -235,6 +236,12 @@ function handleGameOver(data) {
   }
   if(data.winner.id === 2){
     ctx.fillText("Sebek!", canvas.width/2, canvas.height/2);
+  }
+  if(data.winner.id === 69){
+    ctx.font = "30px Comic Sans MS";
+    ctx.fillStyle = "red";
+    ctx.textAlign = "center";
+    ctx.fillText("Chuj wam w dupe...", canvas.width/2, canvas.height/2);
   }
 
   console.log(data.winner);

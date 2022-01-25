@@ -1,6 +1,6 @@
 class bullet{
-    constructor(weapon, color, velocity) {
-        this.pos = weapon.pos
+    constructor(position, color, velocity) {
+        this.pos = position;
         this.color = color
         this.vel = velocity
         this.radius = 5;

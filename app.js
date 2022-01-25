@@ -18,6 +18,8 @@ let playerRooms = {};
 
 var home = require('./routes/index');
 const { CLIENT_RENEG_WINDOW } = require('tls');
+const { stat } = require('fs');
+const { callbackify } = require('util');
 
 app.use(express.static(path.join(__dirname, 'public'))); 
 app.set('views', path.join(__dirname, 'views'));
@@ -35,18 +37,6 @@ io.on('connection', client => {
   client.on('joinSpectate', handleSpectate);
 
   function handleJoinGame(roomName) {
-    // const room = io.sockets.clients(roomName);
-    // console.log(room);
-    // let allUsers;
-    // if (room) {
-    //   allUsers = room.sockets;
-    // }
-
-    // let numClients = 0;
-    // if (allUsers) {
-    //   numClients = Object.keys(allUsers).length;
-    // }
-
     if (!playerRooms[roomName]) {
       client.emit('unknownCode');
       return;
@@ -54,22 +44,24 @@ io.on('connection', client => {
       client.emit('tooManyPlayers');
       return;
     }
+
     playerRooms[roomName].push(client.id);
     clientRooms[client.id] = roomName;
 
     client.join(roomName);
-    client.emit('init', playerRooms[roomName].length-1); //to be changed
+    client.emit('init', 1); //to be changed
     if(playerRooms[roomName].length < 4){ //to be changed "more players"
       startPlayerInterval(roomName, client.id);
     }
     if(playerRooms[roomName].length > 1){
-      spawEnemies(roomName)
-      // const interval = setInterval(() => {
-      //   spawEnemies(roomName);
-      //   if (state[roomName].gameEnded) {
-      //     clearInterval(interval);
-      //   }
-      // }, 5000);
+      // spawEnemies(roomName)
+      const interval = setInterval(() => {
+        if (!state[roomName]) {
+          clearInterval(interval);
+        }else{
+          spawEnemies(roomName);
+        }
+      }, 5000);
     }
   }
 
@@ -144,26 +136,38 @@ function startPlayerInterval(roomName, playerId) {
   const player = state[roomName].players[playerId]
 
   const intervalId = setInterval(() => {
-    loop = gameLoop(player, state[roomName].platforms, state[roomName].enemies);
-    
-    if(state[roomName].players[playerId].kills === 1){
-      state[roomName].gameEnded = true;
-      state[roomName].winner = state[roomName].players[playerId];
-    }
-
-    if (state[roomName].gameEnded || player.health <= 0) {
+    if(!state[roomName]){
       clearInterval(intervalId);
-      delete state[roomName].players[playerId];
+    }else{
+      loop = gameLoop(player, state[roomName].platforms, state[roomName].enemies);
+      
+      if(state[roomName].players[playerId].kills === 15){
+        state[roomName].gameEnded = true;
+        state[roomName].winner = state[roomName].players[playerId];
+      }
+
+      if (state[roomName].gameEnded || player.health <= 0) {
+        clearInterval(intervalId);
+        delete state[roomName].players[playerId];
+      }
     }
   }, 1000 / FRAME_RATE);
 }
 
 function startEmitInterval(roomName) {
+  let gameIdling = false;
+  const checkGameIdling = setTimeout(() => {
+    if(playerRooms[roomName].length === 0 || playerRooms[roomName].length === 1){
+      gameIdling = true;
+    }
+  }, 35000);
   const emitInterval = setInterval(() => {
-    if (state[roomName].gameEnded) {
+    let noPlayersLeft = (Object.keys(state[roomName].players).length === 0 && playerRooms[roomName].length > 0);
+    if (state[roomName].gameEnded || noPlayersLeft || gameIdling) {
+      if(noPlayersLeft || gameIdling){
+        state[roomName].winner = new Player(75,75,0,0,69);
+      }
       emitGameOver(roomName, state[roomName].winner);
-      delete state[roomName];
-      delete playerRooms[roomName];
       clearInterval(emitInterval);
     } else {
       emitGameState(roomName, state[roomName])
@@ -173,20 +177,37 @@ function startEmitInterval(roomName) {
 
 function spawEnemies(roomName){
   const enemyId = makeid(20);
-  state[roomName].enemies[enemyId] = new Enemy(PLAYER_SIZE,PLAYER_SIZE, 400, 300, Math.floor(Math.random() * 3));
+  state[roomName].enemies[enemyId] = new Enemy(PLAYER_SIZE,PLAYER_SIZE, Math.floor(Math.random() * (525 - 0 + 1) + 0), -75, Math.floor(Math.random() * 3));
   const enemySpawned = state[roomName].enemies[enemyId];
   const enemyInterval = setInterval(() => {
-    gameLoop(enemySpawned, state[roomName].platforms, state[roomName].players);
-    if(Math.floor(Math.random() * 30) === 25 && Object.keys(state[roomName].players).length !== 0){
-      let listKeys = Object.keys(state[roomName].players);
-      let randomIndex = Math.floor(Math.random() * listKeys.length);
-      enemySpawned.weapon.shoot(state[roomName].players[listKeys[randomIndex]])
-    }
-    if (state[roomName].gameEnded || enemySpawned.health === 0) {
-      delete state[roomName].enemies[enemyId];
+    if(state[roomName]){
+      if (enemySpawned.health === 0) {
+        delete state[roomName].enemies[enemyId];
+        clearInterval(enemyInterval);
+      }
+
+      gameLoop(enemySpawned, state[roomName].platforms, state[roomName].players);
+      if(Math.floor(Math.random() * 30) === 25 && Object.keys(state[roomName].players).length !== 0){
+        let listKeys = Object.keys(state[roomName].players);
+        let randomIndex = Math.floor(Math.random() * listKeys.length);
+        enemySpawned.weapon.shoot(state[roomName].players[listKeys[randomIndex]])
+      }
+    }else{
       clearInterval(enemyInterval);
     }
   }, 1000 / FRAME_RATE);
+}
+
+function checkIdleGame(room){
+  let idling = false;
+  const idleGame = setTimeout(() => {
+    if(playerRooms[room].length === 0){
+      callback(true)
+      clearInterval(idleGame);
+    }else{
+      callback(false);
+    }
+  }, 5000);
 }
 
 function emitGameState(room, gameState) {
@@ -197,12 +218,12 @@ function emitGameState(room, gameState) {
 
 function emitGameOver(room, winner) {
   //delete playerRooms[room];
+  delete state[room];
+  delete playerRooms[room];
   io.sockets.in(room)
     .emit('gameOver', JSON.stringify({ winner }));
 
-    console.log(io.sockets.in(room))
     io.socketsLeave(room);
-    console.log(io.sockets.in(room))
 }
 
 

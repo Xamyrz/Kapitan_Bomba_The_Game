@@ -46,7 +46,7 @@ class weapon{
         }
         this.fire.x = (cos * 40) + this.pos.x
         this.fire.y = (sin * 40) + this.pos.y
-        this.bullets.push(new bullet(this, 'orange', velocity))
+        this.bullets.push(new bullet(this.pos, 'orange', velocity))
     }
 }
 
