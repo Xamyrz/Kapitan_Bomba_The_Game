@@ -157,7 +157,7 @@ function startPlayerInterval(roomName, playerId) {
 function startEmitInterval(roomName) {
   let gameIdling = false;
   const checkGameIdling = setTimeout(() => {
-    if(!playerRooms[roomName].length || playerRooms[roomName].length === 1){
+    if(playerRooms[roomName] === undefined || !playerRooms[roomName].length || playerRooms[roomName].length === 1){
       gameIdling = true;
     }
   }, 120000);
