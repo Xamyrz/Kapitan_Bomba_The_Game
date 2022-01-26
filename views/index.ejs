@@ -3,7 +3,7 @@
   <title>NAPIERDALAMY!!!</title>
   <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/css/bootstrap.min.css" integrity="sha384-9aIt2nRpC12Uk9gS9baDl411NQApFmC26EwAOH8WgZl5MYYxFfc+NcPb1dKGj7Sk" crossorigin="anonymous">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-
+  <link rel="manifest" href="./manifest.webmanifest">
 <style>
 #gameScreen {
   display: none;
@@ -15,7 +15,9 @@
   display: none;
 }
 
-
+#gameScreen {
+  margin-top: 140px;
+}
 
 .btn-circle.btn-xl {
     width: 70px;
@@ -51,11 +53,17 @@
   >
   <i class="fas fa-desktop"></i>
   </button>
-  <section id="section" class="vh-100">
-    <div class="container h-100">
+  <button
+  type="submit"
+  class="add-button btn btn-success btn-circle btn-xl"
+  >
+  <i class="fas fa-plus"></i>
+  </button>
+  <section id="section">
+    <div>
 
-      <div id="initialScreen" class="h-100">
-        <div class="d-flex flex-column align-items-center justify-content-center h-100">
+      <div id="initialScreen">
+        <div class="d-flex flex-column align-items-center justify-content-center">
             <h1>NAPIERDALAMY!!!</h1>
             <button
               type="submit"
@@ -66,7 +74,7 @@
             </button>
             <div>OR</div>
             <div class="form-group">
-              <input type="text" placeholder="Enter Game Code" id="gameCodeInput"/>
+              <input type="text" autocomplete="off" placeholder="Enter Game Code" id="gameCodeInput"/>
             </div>
             <button
               type="submit"
@@ -85,8 +93,8 @@
         </div>
       </div>
 
-      <div id="gameScreen" class="h-100">
-        <div class="d-flex flex-column align-items-center justify-content-center h-100">
+      <div id="gameScreen">
+        <div class="d-flex flex-column align-items-center justify-content-center">
 
           <h1>Your game code is: <span id="gameCodeDisplay"></span></h1>
 
@@ -100,7 +108,7 @@
     type="submit"
     class="btn btn-success btn-circle btn-xl"
     id="shootButton"
-    style="position: absolute; right: 30%;"
+    style="position: absolute; left: 25%;"
       >
       <i class="fa fa-fire"></i>
     </button>

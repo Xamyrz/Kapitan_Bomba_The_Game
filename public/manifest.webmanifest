@@ -1,0 +1,15 @@
+{
+    "background_color": "purple",
+    "description": "Kapitan Bomba the Game",
+    "display": "fullscreen",
+    "icons": [
+      {
+        "src": "/bomba.png",
+        "sizes": "192x192",
+        "type": "image/png"
+      }
+    ],
+    "name": "Kapitan Bomba",
+    "short_name": "Kapitan Bomba",
+    "start_url": "192.168.1.100:5000"
+  }

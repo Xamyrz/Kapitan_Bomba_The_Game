@@ -1,4 +1,3 @@
-
 const BG_COLOUR = '#231f20';
 const PLAYER_SIZE = 75;
 
@@ -31,9 +30,20 @@ spectateBtn.addEventListener('click', spectateGame);
 toggleControlsBtn.addEventListener('click', toggleControls);
 toggleGameScreenBtn.addEventListener('click', toggleGameScreen);
 
+shootBtn.addEventListener('touchmove', function(e){ e.preventDefault()});
 shootBtn.addEventListener('touchstart', shoot, false);
-shootBtn.addEventListener('click', shoot, false);
+//shootBtn.addEventListener('click', shoot, false);
 
+let storage = storageAvailable();
+function storageAvailable(){
+  if (typeof(Storage) !== "undefined") {
+    console.log("hi");
+    return true;
+    } else {
+      console.log("hi");
+    return false
+  }
+}
 
 function newGame() {
   socket.emit('newGame');
@@ -48,14 +58,18 @@ function spectateGame(){
   socket.emit('joinSpectate', gameCodeInput.value);
 }
 
+let gameActive = false;
+
 function toggleGameScreen(){
   let screen = document.getElementById("section");
-  if (gameScreen.style.display === "none") {
+  if (gameActive && gameScreen.style.display === "none") {
     screen.style.display = "block";
     gameScreen.style.display = "block";
-  } else {
+    if(storage) localStorage.setItem("gameScreen", "block");
+  } else if(gameActive && gameScreen.style.display === "block") {
     screen.style.display = "none";
     gameScreen.style.display = "none";
+    if(storage) localStorage.setItem("gameScreen", "none");
   }
 }
 
@@ -69,17 +83,46 @@ function toggleControls(){
 
 let canvas, ctx;
 let playerNumber;
-let gameActive = false;
 var joy;
 
 function init() {
   initialScreen.style.display = "none";
-  gameScreen.style.display = "block";
+  if(storage && localStorage.getItem("gameScreen")){
+    gameScreen.style.display = localStorage.getItem("gameScreen");
+  }else{
+    gameScreen.style.display = "block";
+  }
 
   canvas = document.getElementById('canvas');
   ctx = canvas.getContext('2d');
 
   canvas.width = canvas.height = 600;
+
+  // scaling to size, kinda working
+  // fullscreenify(canvas);
+  // function fullscreenify(canvas) {
+  //   var style = canvas.getAttribute('style') || '';
+    
+  //   window.addEventListener('resize', function () {resize(canvas);}, false);
+
+  //   resize(canvas);
+
+  //   function resize(canvas) {
+  //       var scale = {x: 1, y: 1};
+  //       scale.x = (window.innerWidth - 10) / canvas.width;
+  //       scale.y = (window.innerHeight - 10) / canvas.height;
+        
+  //       if (scale.x < 1 || scale.y < 1) {
+  //           scale = '1, 1';
+  //       } else if (scale.x < scale.y) {
+  //           scale = scale.x + ', ' + scale.x;
+  //       } else {
+  //           scale = scale.y + ', ' + scale.y;
+  //       }
+        
+  //       canvas.setAttribute('style', style + ' ' + '-ms-transform-origin: center top; -webkit-transform-origin: center top; -moz-transform-origin: center top; -o-transform-origin: center top; transform-origin: center top; -ms-transform: scale(' + scale + '); -webkit-transform: scale3d(' + scale + ', 1); -moz-transform: scale(' + scale + '); -o-transform: scale(' + scale + '); transform: scale(' + scale + ');');
+  //   }
+  // }
 
   ctx.fillStyle = BG_COLOUR;
   ctx.fillRect(0, 0, canvas.width, canvas.height);
@@ -287,3 +330,41 @@ function drawBullets(bullet) {
   ctx.fill()
   ctx.restore()
 }
+
+
+//install
+
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker
+    .register('./sw.js')
+    .then(() => { console.log('Service Worker Registered'); });
+}
+
+let deferredPrompt;
+const addBtn = document.querySelector('.add-button');
+addBtn.style.display = 'none';
+
+window.addEventListener('beforeinstallprompt', (e) => {
+  // Prevent Chrome 67 and earlier from automatically showing the prompt
+  e.preventDefault();
+  // Stash the event so it can be triggered later.
+  deferredPrompt = e;
+  // Update UI to notify the user they can add to home screen
+  addBtn.style.display = 'block';
+
+  addBtn.addEventListener('click', () => {
+    // hide our user interface that shows our A2HS button
+    addBtn.style.display = 'none';
+    // Show the prompt
+    deferredPrompt.prompt();
+    // Wait for the user to respond to the prompt
+    deferredPrompt.userChoice.then((choiceResult) => {
+      if (choiceResult.outcome === 'accepted') {
+        console.log('User accepted the A2HS prompt');
+      } else {
+        console.log('User dismissed the A2HS prompt');
+      }
+      deferredPrompt = null;
+    });
+  });
+});
