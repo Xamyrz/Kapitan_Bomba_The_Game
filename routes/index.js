@@ -11,8 +11,4 @@ router.get('/', function (req, res, next) {
     res.render('index');
 });
 
-router.get('/joy', function (req, res, next) {
-    res.render('conroller');
-});
-
 module.exports = router;

@@ -37,7 +37,6 @@ shootBtn.addEventListener('click', shoot, false);
 
 function newGame() {
   socket.emit('newGame');
-  console.log("emitted")
 }
 
 function joinGame() {
@@ -200,7 +199,6 @@ function shoot(){
 
 function handleInit(number) {
   init();
-  console.log(number);
   if(number === 1){
     showJoysticks();
   }
@@ -243,8 +241,6 @@ function handleGameOver(data) {
     ctx.textAlign = "center";
     ctx.fillText("HUJ wam w dupe...", canvas.width/2, canvas.height/2);
   }
-
-  console.log(data.winner);
 }
 
 function handleGameCode(gameCode) {

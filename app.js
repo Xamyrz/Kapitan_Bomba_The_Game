@@ -165,7 +165,7 @@ function startEmitInterval(roomName) {
     let noPlayersLeft = (Object.keys(state[roomName].players).length === 0 && playerRooms[roomName].length > 0);
     if (state[roomName].gameEnded || noPlayersLeft || gameIdling) {
       if(noPlayersLeft || gameIdling){
-        console.log(noPlayersLeft, gameIdling);
+        // console.log(state[roomName].gameEnded, noPlayersLeft, gameIdling);
         state[roomName].winner = new Player(75,75,0,0,69);
       }
       emitGameOver(roomName, state[roomName].winner);
