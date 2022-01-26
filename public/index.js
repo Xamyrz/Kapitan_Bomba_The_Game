@@ -37,10 +37,8 @@ shootBtn.addEventListener('touchstart', shoot, false);
 let storage = storageAvailable();
 function storageAvailable(){
   if (typeof(Storage) !== "undefined") {
-    console.log("hi");
     return true;
     } else {
-      console.log("hi");
     return false
   }
 }
