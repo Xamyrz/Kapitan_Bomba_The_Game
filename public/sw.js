@@ -1,7 +1,6 @@
 self.addEventListener('install', (e) => {
     e.waitUntil(
       caches.open('Kapitan-Bomba-store').then((cache) => cache.addAll([
-          '/bomba.png',
       ])),
     );
   });
